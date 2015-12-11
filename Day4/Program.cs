@@ -16,15 +16,35 @@ namespace Day4
             UInt64 Counter = 0;
             byte[] Result;
 
+            UInt64 FiveZeros = 0;
+            UInt64 SixZeros = 0;
+
             do
             {
                 Counter++;
                 String HashingString = Input + Counter;
                 Result = Hash.ComputeHash(Encoding.ASCII.GetBytes(HashingString));
 
-            } while (!HasEnoughLeadingZeros(Result, 5));
+                if(FiveZeros == 0)
+                {
+                    if(HasEnoughLeadingZeros(Result, 5))
+                    {
+                        FiveZeros = Counter;
+                    }
+                }
 
-            System.Console.WriteLine("Number: {0}", Counter);
+                if (SixZeros == 0)
+                {
+                    if (HasEnoughLeadingZeros(Result, 6))
+                    {
+                        SixZeros = Counter;
+                    }
+                }
+
+            } while ((FiveZeros == 0) || (SixZeros == 0));
+
+            System.Console.WriteLine("Five: {0}", FiveZeros);
+            System.Console.WriteLine("Six: {0}", SixZeros);
             Console.Write("Press any key to continue . . .");
             Console.ReadKey(true);
         }
