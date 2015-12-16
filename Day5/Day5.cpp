@@ -3,7 +3,8 @@
 
 #include "stdafx.h"
 
-static bool IsStringNice(const std::string & String);
+static bool IsStringNicePartOne(const std::string & String);
+static bool IsStringNicePartTwo(const std::string & String);
 
 int main()
 {
@@ -16,27 +17,34 @@ int main()
 	}
 
 	std::string Line;
-	uint32_t NumberOfNiceStrings = 0;
+	uint32_t NumberOfNiceStringsPartOne = 0;
+	uint32_t NumberOfNiceStringsPartTwo = 0;
 
 
 	while (std::getline(Input, Line))
 	{
-		if (IsStringNice(Line))
+		if (IsStringNicePartOne(Line))
 		{
-			NumberOfNiceStrings++;
+			NumberOfNiceStringsPartOne++;
+		}
+
+		if (IsStringNicePartTwo(Line))
+		{
+			NumberOfNiceStringsPartTwo++;
 		}
 	}
 
 	Input.close();
 
-	std::cout << "Nice Strings: " << NumberOfNiceStrings << std::endl;
+	std::cout << "Nice Strings (Part One): " << NumberOfNiceStringsPartOne << std::endl;
+	std::cout << "Nice Strings (Part Two): " << NumberOfNiceStringsPartTwo << std::endl;
 
 	system("pause");
 	
 	return 0;
 }
 
-static bool IsStringNice(const std::string & String)
+static bool IsStringNicePartOne(const std::string & String)
 {
 	static const std::set<char> Vowels = { 'a', 'e','i', 'o', 'u' };
 	static const std::map<char, std::string> BadStrings = { { 'a', "ab" }, { 'c', "cd" }, { 'p', "pq" }, { 'x', "xy" } };
@@ -76,4 +84,62 @@ static bool IsStringNice(const std::string & String)
 	}
 
 	return ((NumberOfVowels >= 3) && DoubleLetter);
+}
+
+static bool IsStringNicePartTwo(const std::string & String)
+{
+	bool PairRepeated = false;
+	bool LetterRepeated = false;
+
+	std::map<char, std::set<char>> FollowingLetters;
+	
+	for (std::string::const_iterator Letter = String.begin(); (Letter != String.end()) && (!(PairRepeated && LetterRepeated)); Letter++)
+	{
+		// Check for the Pair
+		if (!PairRepeated)
+		{
+			// Check if Pair of current and next Letter is present
+			if (Letter <= (String.end() - 2))
+			{
+				auto CurrentLetterResult = FollowingLetters.find(*Letter);
+				if (CurrentLetterResult != FollowingLetters.end())
+				{
+					char NextLetter = *(Letter + 1);
+					auto PairResult = CurrentLetterResult->second.find(NextLetter);
+					if (PairResult != CurrentLetterResult->second.end())
+					{
+						PairRepeated = true;
+					}
+				}
+			}
+
+			// Add Pair of previous and current Letter
+			if (Letter >= (String.begin() + 1))
+			{
+				char PreviousLetter = *(Letter - 1);
+				auto PreviousLetterResult = FollowingLetters.find(PreviousLetter);
+
+				if (PreviousLetterResult != FollowingLetters.end())
+				{
+					PreviousLetterResult->second.insert(*Letter);
+				}
+				else
+				{
+					FollowingLetters.insert({ PreviousLetter,{ *Letter } });
+				}
+			}
+		}
+		
+		// Check for the letter repeating with on in between
+		if ((!LetterRepeated) && (Letter >= (String.begin() + 2)))
+		{
+			if ((*Letter) == (*(Letter - 2)))
+			{
+				LetterRepeated = true;
+			}
+		}
+
+	}
+
+	return (PairRepeated && LetterRepeated);
 }
