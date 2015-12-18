@@ -27,7 +27,10 @@ int main()
 	std::string Line;
 
 	std::array<std::array<bool, 1000>, 1000> Lights = {};
+	std::array<std::array<uint32_t, 1000>, 1000> LightBrightness = { 0 };
+
 	uint64_t LightsOn = 0;
+	uint64_t TotalBrightness = 0;
 
 	while (std::getline(Input, Line))
 	{
@@ -43,6 +46,10 @@ int main()
 			LightMethod = [&](uint32_t x, uint32_t y) {
 				Lights[x][y] = !Lights[x][y];
 				LightsOn += (Lights[x][y]) ? 1 : -1;
+
+				LightBrightness[x][y] += 2;
+				TotalBrightness += 2;
+
 			};
 			break;
 		case TurnOff:
@@ -51,6 +58,12 @@ int main()
 				{
 					Lights[x][y] = false;
 					LightsOn--;
+				}
+
+				if (LightBrightness[x][y] > 0)
+				{
+					LightBrightness[x][y]--;
+					TotalBrightness--;
 				}
 			};
 			break;
@@ -61,6 +74,9 @@ int main()
 					Lights[x][y] = true;
 					LightsOn++;
 				}
+
+				LightBrightness[x][y]++;
+				TotalBrightness++;
 			};
 			break;
 		}
@@ -75,6 +91,7 @@ int main()
 	Input.close();
 
 	std::cout << "Lit Lights: " << LightsOn << std::endl;
+	std::cout << "Total Brightness: " << TotalBrightness << std::endl;
 
 	system("pause");
 
