@@ -24,6 +24,9 @@ public:
 	void AddNewOutput(RawPWire NewOutput);
 	void TryToSignal();
 
+	void CascadeReset(std::set<std::string> & ResetWires);
+	void ChangeValue(uint32_t StaticValue);
+
 	void PrintInfo(uint32_t Intend);
 
 private:
@@ -40,7 +43,7 @@ private:
 	PWire InputA;
 	PWire InputB;
 	WireMethod InputMethod;
-	WireSet OutputWiresWaitingForSignal;
+	WireSet OutputWires;
 
 	bool HasValue;
 	uint32_t Value;

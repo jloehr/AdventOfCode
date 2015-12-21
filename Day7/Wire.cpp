@@ -60,7 +60,7 @@ void Wire::SetupValueWire(std::string & InputString, WireNameMap & Wires, Single
 	if (TryParseString(InputString, Value))
 	{
 		Value = ValueModifier(Value);
-		HasValue = true;
+		InputMethod = [this]() { HasValue = true; };
 	}
 	else
 	{
@@ -70,17 +70,9 @@ void Wire::SetupValueWire(std::string & InputString, WireNameMap & Wires, Single
 		}
 
 		InputA = Wires[InputString];
+		InputA->AddNewOutput(this);
 
-		if (InputA->HasSignal())
-		{
-			Value = ValueModifier(InputA->GetValue());
-			HasValue = true;
-		}
-		else
-		{
-			InputA->AddNewOutput(this);
-			InputMethod = [this, ValueModifier]() { if (InputA->HasSignal()) { Value = ValueModifier(InputA->GetValue()); HasValue = true; }};
-		}
+		InputMethod = [this, ValueModifier]() { if (InputA->HasSignal()) { Value = ValueModifier(InputA->GetValue()); HasValue = true; }};
 	}
 }
 
@@ -114,11 +106,7 @@ void Wire::SetupInput(std::string & InputString, PWire & InputField, WireNameMap
 		}
 
 		InputField = Wires[InputString];
-
-		if (!InputField->HasSignal())
-		{
-			InputField->AddNewOutput(this);
-		}
+		InputField->AddNewOutput(this);
 	}
 }
 
@@ -169,25 +157,55 @@ uint32_t Wire::GetValue()
 
 void Wire::AddNewOutput(RawPWire NewOutput)
 {
-	OutputWiresWaitingForSignal.insert(NewOutput);
+	OutputWires.insert(NewOutput);
 }
 
 void Wire::TryToSignal()
 {
+	if (HasValue)
+	{
+		return;
+	}
+
 	if (InputMethod != nullptr)
 	{
 		InputMethod();
 	}
 	
-	if (HasValue && !OutputWiresWaitingForSignal.empty())
+	if (HasValue && !OutputWires.empty())
 	{
-		for (RawPWire OutputWire : OutputWiresWaitingForSignal)
+		for (RawPWire OutputWire : OutputWires)
 		{
 			OutputWire->TryToSignal();
 		}
-
-		OutputWiresWaitingForSignal.clear();
 	}
+}
+
+void Wire::CascadeReset(std::set<std::string> & ResetWires)
+{
+	if (ResetWires.find(Identifier) != ResetWires.end())
+	{
+		return;
+	}
+	else
+	{
+		ResetWires.insert(Identifier);
+	}
+
+	HasValue = false;
+	Value = 0;
+
+	for (RawPWire Output : OutputWires)
+	{
+		Output->CascadeReset(ResetWires);
+	}
+}
+
+void Wire::ChangeValue(uint32_t StaticValue)
+{
+	CascadeReset(std::set<std::string>());
+	Value = StaticValue;
+	TryToSignal();
 }
 
 void Wire::PrintInfo(uint32_t Intend)

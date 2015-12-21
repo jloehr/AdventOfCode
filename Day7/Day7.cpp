@@ -28,25 +28,14 @@ int main()
 
 	Input.close();
 
-	auto WireA = Wires.find("a");
+	uint32_t WireAValue = Wires["a"]->GetValue();
+	std::cout << "Part One - Wire a: " << WireAValue << std::endl;
 
-	if (WireA == Wires.end())
-	{
-		std::cout << "Error Wire \"a\" not found!" << std::endl;
-	}
-	else
-	{
-		if (!WireA->second->HasSignal())
-		{
-			std::cout << "Error Wire \"a\" has no value yet!" << std::endl;
-			WireA->second->PrintInfo(0);
-		}
-		else
-		{
-			std::cout << "Wire a: " << WireA->second->GetValue() << std::endl;
-		}
-	}
-	
+	Wires["b"]->ChangeValue(WireAValue);
+
+	WireAValue = Wires["a"]->GetValue();
+	std::cout << "Part Two - Wire a: " << WireAValue << std::endl;
+
 	system("pause");
 
     return 0;
