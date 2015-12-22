@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 static size_t GetUnescapedSize(const std::string & String);
+static size_t GetEscapedSize(const std::string & String);
 
 int main()
 {
@@ -17,16 +18,19 @@ int main()
 
 	std::string Line;
 
-	int32_t Difference = 0;
+	int32_t DifferenceUnescaped = 0;
+	int32_t DifferenceEscaped = 0;
 
 	while (std::getline(Input, Line))
 	{
-		Difference += (int32_t)(Line.size() - GetUnescapedSize(Line));
+		DifferenceUnescaped += (int32_t)(Line.size() - GetUnescapedSize(Line));
+		DifferenceEscaped += (int32_t)(GetEscapedSize(Line) - Line.size());
 	}
 
 	Input.close();
 
-	std::cout << "Difference: " << Difference << std::endl;
+	std::cout << "Difference Unescaped: " << DifferenceUnescaped << std::endl;
+	std::cout << "Difference Escaped: " << DifferenceEscaped << std::endl;
 
 	system("pause");
 
@@ -55,4 +59,24 @@ size_t GetUnescapedSize(const std::string & String)
 	}
 
 	return Size;
+}
+
+size_t GetEscapedSize(const std::string & String)
+{
+	size_t Size = 0;
+	for (char Character : String)
+	{
+		switch (Character)
+		{
+		case '\\':
+		case '\"':
+			Size++;
+		default:
+			Size++;
+			break;
+		}
+
+	}
+
+	return Size + 2;
 }
