@@ -82,8 +82,10 @@ const Road::CompareFunction Road::DescendingSort = [](PRoad A, PRoad B) -> bool 
 const PathNode::CompareFunction PathNode::AscendingSort = [](PPathNode A, PPathNode B) -> bool { return (A->Value < B->Value); };
 const PathNode::CompareFunction PathNode::DescendingSort = [](PPathNode A, PPathNode B) -> bool { return (A->Value > B->Value); };
 
+enum PathType { SHORTEST, LONGEST };
+
 static void ParseLine(const std::string & Line, CityMap & Cities);
-static uint32_t CalculateShortestPath(const CityMap & Cities);
+static uint32_t CalculatePath(const CityMap & Cities, PathType Type);
 
 int main()
 {
@@ -105,9 +107,8 @@ int main()
 
 	Input.close();
 
-	uint32_t ShortestRoute = CalculateShortestPath(Cities);
-
-	std::cout << "Shartest Route: " << ShortestRoute << std::endl;
+	std::cout << "Shartest Route: " << CalculatePath(Cities, SHORTEST) << std::endl;
+	std::cout << "Longest Route: " << CalculatePath(Cities, LONGEST) << std::endl;
 
 	system("pause");
 
@@ -147,7 +148,7 @@ void ParseLine(const std::string & Line, CityMap & Cities)
 	To->Roads.insert(NewRoadReverse);
 }
 
-uint32_t CalculateShortestPath(const CityMap & Cities)
+static uint32_t CalculatePath(const CityMap & Cities, PathType Type)
 {
 	PathSet PossiblePaths(PathNode::AscendingSort);
 
@@ -178,7 +179,13 @@ uint32_t CalculateShortestPath(const CityMap & Cities)
 			}
 		}
 
-		if (!NotFinished)
+		if ((Type == SHORTEST) && !NotFinished)
+		{
+			CurrentBest->PrintInfo();
+			return CurrentBest->Value;
+		}
+
+		if ((Type == LONGEST) && PossiblePaths.empty())
 		{
 			CurrentBest->PrintInfo();
 			return CurrentBest->Value;
@@ -186,5 +193,4 @@ uint32_t CalculateShortestPath(const CityMap & Cities)
 	}
 
 	return 0;
-
 }
