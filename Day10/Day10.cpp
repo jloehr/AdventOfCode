@@ -7,11 +7,12 @@ static void AppendCurrentCharacter(std::string & Buffer, char CurrentCharacter, 
 
 int main()
 {
-	const size_t Steps = 40;
+	const std::vector<size_t> Steps = { 40, 50 };
+	auto CurrentStep = Steps.begin();
 	std::string Input("3113322113");
 	std::cout << Input << std::endl;
 
-	for (size_t i = 0; i < Steps; i++)
+	for (size_t i = 1; i <= *(Steps.end() - 1); i++)
 	{
 		std::string Buffer;
 
@@ -37,10 +38,14 @@ int main()
 
 		Input.swap(Buffer);
 
+		if ((CurrentStep != Steps.end()) && (i == *CurrentStep))
+		{
+			std::cout << "Length(" << i << "): " << Input.size() << std::endl;
+			CurrentStep++;
+		}
+
 		std::cout << i << std::endl;
 	}
-
-	std::cout << "Length: " << Input.size() << std::endl;
 
 	system("pause");
 
