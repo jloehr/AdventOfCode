@@ -15,6 +15,10 @@ int main()
 
 	std::cout << SantasPassword << std::endl;
 
+	++SantasPassword;
+
+	std::cout << SantasPassword << std::endl;
+
 	system("pause");
 
     return 0;
