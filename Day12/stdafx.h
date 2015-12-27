@@ -12,7 +12,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 
+#include <stack>
 
 // TODO: reference additional headers your program requires here
