@@ -6,9 +6,10 @@
 typedef std::array<int64_t, 5> Ingredient;
 typedef std::array<Ingredient, 4> IngredientArray;
 
-static uint64_t GetBestScore(const IngredientArray & Ingredients);
-static uint64_t RecoursiceRecipe(const IngredientArray & Ingredients, size_t IngredientIndex, size_t TablespoonsLeft, Ingredient & AccumulatedIngredientScore);
+static uint64_t GetBestScore(const IngredientArray & Ingredients, bool ExactCalories);
+static uint64_t RecoursiceRecipe(const IngredientArray & Ingredients, size_t IngredientIndex, size_t TablespoonsLeft, Ingredient & AccumulatedIngredientScore, bool ExactCalories);
 
+static const uint64_t RequestedCalories = 500;
 
 int main()
 {
@@ -49,34 +50,45 @@ int main()
 
 	Input.close();
 
-	std::cout << "Best Score: " << GetBestScore(Ingredients) << std::endl;
+	std::cout << "Best Score: " << GetBestScore(Ingredients, false) << std::endl;
+	std::cout << "Best Score for " << RequestedCalories << " Calories: " << GetBestScore(Ingredients, true) << std::endl;
 
 	system("pause");
 
     return 0;
 }
 
-static uint64_t GetBestScore(const IngredientArray & Ingredients)
+static uint64_t GetBestScore(const IngredientArray & Ingredients, bool ExactCalories)
 {
-	return RecoursiceRecipe(Ingredients, 0, 100, Ingredient());
-
+	return RecoursiceRecipe(Ingredients, 0, 100, Ingredient(), ExactCalories);
 }
 
-static uint64_t RecoursiceRecipe(const IngredientArray & Ingredients, size_t IngredientIndex, size_t TablespoonsLeft, Ingredient & AccumulatedIngredientScore)
+static uint64_t RecoursiceRecipe(const IngredientArray & Ingredients, size_t IngredientIndex, size_t TablespoonsLeft, Ingredient & AccumulatedIngredientScore, bool ExactCalories)
 {
 	bool LastIngredient = ((IngredientIndex + 1) == Ingredients.size());
 	if(LastIngredient)
 	{
 		uint64_t Score = 1;
 
-		for (size_t i = 0; i < (AccumulatedIngredientScore.size() - 1); i++)
+		for (size_t i = 0; i < AccumulatedIngredientScore.size(); i++)
 		{
 			AccumulatedIngredientScore[i] += TablespoonsLeft * Ingredients[IngredientIndex][i];
 
-			Score *= (AccumulatedIngredientScore[i] >= 0) ? AccumulatedIngredientScore[i] : 0;
+			if (i < (AccumulatedIngredientScore.size() - 1))
+			{
+				Score *= (AccumulatedIngredientScore[i] >= 0) ? AccumulatedIngredientScore[i] : 0;
+			}
 		}
 
-		return Score;
+		if (ExactCalories)
+		{
+			uint64_t Calories = AccumulatedIngredientScore[AccumulatedIngredientScore.size() - 1];
+			return (Calories == RequestedCalories) ? Score : 0;
+		}
+		else
+		{
+			return Score;
+		}
 	}
 
 	uint64_t BestScore = 0;
@@ -89,7 +101,7 @@ static uint64_t RecoursiceRecipe(const IngredientArray & Ingredients, size_t Ing
 			NewAccumulatedIngredientScore[i] += TableSpoons * Ingredients[IngredientIndex][i];
 		}
 
-		uint64_t Score = RecoursiceRecipe(Ingredients, IngredientIndex + 1, TablespoonsLeft - TableSpoons, NewAccumulatedIngredientScore);
+		uint64_t Score = RecoursiceRecipe(Ingredients, IngredientIndex + 1, TablespoonsLeft - TableSpoons, NewAccumulatedIngredientScore, ExactCalories);
 
 		BestScore = (BestScore < Score) ? Score : BestScore;
 	}
