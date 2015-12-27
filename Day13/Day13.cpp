@@ -7,6 +7,7 @@ typedef std::map<std::string, int32_t> StringIntMap;
 typedef std::map<std::string, StringIntMap> StringMap;
 
 static void ParseLine(const std::string & Line, StringMap & People, StringMap & ConnectionBuffer);
+static void AddMyself(StringMap & People);
 static int32_t GetBestSeating(const StringMap & People);
 static int32_t RecursiveSeating(const StringMap & People, const std::string & StartPerson, const StringIntMap & CurrentPerson, std::set<std::string> & SeatedPeople, int32_t CurrentHappiness);
 
@@ -34,7 +35,11 @@ int main()
 
 	Input.close();
 
-	std::cout << "Happiness: " << GetBestSeating(People) << std::endl;
+	std::cout << "Happiness (without me): " << GetBestSeating(People) << std::endl;
+
+	AddMyself(People);
+
+	std::cout << "Happiness (including me): " << GetBestSeating(People) << std::endl;
 
 	system("pause");
 
@@ -72,6 +77,17 @@ static void ParseLine(const std::string & Line, StringMap & People, StringMap & 
 		int32_t CoupleHappiness = HappinessValue + PartnerHappiness->second;
 		People[Partner].insert(std::make_pair(Person, CoupleHappiness));
 		People[Person].insert(std::make_pair(Partner, CoupleHappiness));
+	}
+}
+
+static void AddMyself(StringMap & People)
+{
+	static const std::string MyName("Me");
+
+	for (auto & Person : People)
+	{
+		Person.second.insert(std::make_pair(MyName, 0));
+		People[MyName].insert(std::make_pair(Person.first, 0));
 	}
 }
 
