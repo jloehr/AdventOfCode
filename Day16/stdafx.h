@@ -17,6 +17,9 @@
 
 #include <map>
 #include <vector>
+#include <array>
+
+#include <functional>
 
 #include "../Common/Common.h"
 
