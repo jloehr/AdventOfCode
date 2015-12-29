@@ -7,15 +7,20 @@ typedef std::vector<size_t> UIntVector;
 
 static UIntVector GetSortedBuckets(const std::string & FileName);
 static UIntVector GetRemainingBucketSizes(const UIntVector & Buckets);
-static size_t GetAmountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnog);
-static size_t RecoursiveAmountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnogLeft, size_t BucketIndex);
+static size_t GetCountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnog, size_t & MinBucketCount, size_t & MinBucketCountCombinations);
+static size_t RecoursiveCountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnogLeft, size_t BucketIndex, size_t BucketCount, size_t & MinBucketCount, size_t & MinBucketCountCombinations);
 
 int main()
 {
 	UIntVector Buckets = GetSortedBuckets("Input.txt");
 	UIntVector RemainingBucketSize = GetRemainingBucketSizes(Buckets);
+	
+	size_t MinBucketCount;
+	size_t MinBucketCountCombinations;
+	size_t CountOfOverallCombinations = GetCountOfCombinations(Buckets, RemainingBucketSize, 150, MinBucketCount, MinBucketCountCombinations);
 
-	std::cout << "Amount of Combinations: " << GetAmountOfCombinations(Buckets, RemainingBucketSize, 150) << std::endl;
+	std::cout << "Overall Combinations: " << CountOfOverallCombinations << std::endl;
+	std::cout << "Combinations for " << MinBucketCount << " Buckets: " << MinBucketCountCombinations << std::endl;
 
 	system("pause");
 
@@ -55,15 +60,28 @@ static UIntVector GetRemainingBucketSizes(const UIntVector & Buckets)
 	return RemainingBucketSize;
 }
 
-static size_t GetAmountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnog)
+static size_t GetCountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnog, size_t & MinBucketCount, size_t & MinBucketCountCombinations)
 {
-	return RecoursiveAmountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnog, 0);
+	MinBucketCount = SIZE_MAX;
+	MinBucketCountCombinations = 0;
+
+	return RecoursiveCountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnog, 0, 0, MinBucketCount, MinBucketCountCombinations);
 }
 
-static size_t RecoursiveAmountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnogLeft, size_t BucketIndex)
+static size_t RecoursiveCountOfCombinations(const UIntVector & Buckets, const UIntVector & RemainingBucketSize, size_t LitersOfEggnogLeft, size_t BucketIndex, size_t BucketCount, size_t & MinBucketCount, size_t & MinBucketCountCombinations)
 {
 	if (LitersOfEggnogLeft == 0)
 	{
+		if (BucketCount < MinBucketCount)
+		{
+			MinBucketCount = BucketCount;
+			MinBucketCountCombinations = 1;
+		}
+		else if(BucketCount == MinBucketCount)
+		{
+			MinBucketCountCombinations++;
+		}
+
 		return 1;
 	}
 
@@ -72,12 +90,12 @@ static size_t RecoursiveAmountOfCombinations(const UIntVector & Buckets, const U
 		return 0;
 	}
 
-	size_t AmountOfCombinations = RecoursiveAmountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnogLeft, BucketIndex + 1);
+	size_t CountOfCombinations = RecoursiveCountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnogLeft, BucketIndex + 1, BucketCount, MinBucketCount, MinBucketCountCombinations);
 
 	if (LitersOfEggnogLeft >= Buckets[BucketIndex])
 	{
-		AmountOfCombinations += RecoursiveAmountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnogLeft - Buckets[BucketIndex], BucketIndex + 1);
+		CountOfCombinations += RecoursiveCountOfCombinations(Buckets, RemainingBucketSize, LitersOfEggnogLeft - Buckets[BucketIndex], BucketIndex + 1, BucketCount + 1, MinBucketCount, MinBucketCountCombinations);
 	}
 	
-	return AmountOfCombinations;
+	return CountOfCombinations;
 }
