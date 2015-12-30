@@ -5,11 +5,14 @@
 
 typedef std::pair<std::string, std::string> StringPair;
 typedef std::vector<StringPair> StringPairVector;
-typedef std::set <std::string> StringSet;
+typedef std::set<std::string> StringSet;
+typedef std::map<std::string, size_t> StringIntMap;
 
 static void ParseFile(std::string InputFile, StringPairVector & Replacements, std::string & MedicineMolecule);
 static size_t GetDistinctMoleculeCountAfterReplacements(const StringPairVector & Replacements, const std::string & MedicineMolecule);
+static size_t GetStepsToProduceMolecule(const StringPairVector & Replacements, const std::string & MedicineMolecule);
 
+static const std::string Electron("e");
 
 int main()
 {
@@ -19,8 +22,10 @@ int main()
 	ParseFile("Input.txt", Replacements, MedicineMolecule);
 
 	size_t MoleculeCount = GetDistinctMoleculeCountAfterReplacements(Replacements, MedicineMolecule);
+	size_t StepsToProduce = GetStepsToProduceMolecule(Replacements, MedicineMolecule);
 
 	std::cout << "Distinct Molecules: " << MoleculeCount << std::endl;
+	std::cout << "Steps to produce: " << StepsToProduce << std::endl;
 
 	system("pause");
 
@@ -67,4 +72,35 @@ static size_t GetDistinctMoleculeCountAfterReplacements(const StringPairVector &
 	}
 
 	return Molecules.size();
+}
+
+static bool IsLowerCase(char Character)
+{
+	return (Character >= 'a') && (Character <= 'z');
+}
+
+static size_t GetStepsToProduceMolecule(const StringPairVector & Replacements, const std::string & MedicineMolecule)
+{
+	StringIntMap Atoms;
+	size_t AtomCount = 0;
+
+	std::string::const_iterator AtomStart = MedicineMolecule.begin();
+
+	for (std::string::const_iterator Character = MedicineMolecule.begin() + 1; Character != MedicineMolecule.end(); ++Character)
+	{
+		if (IsLowerCase(*Character))
+		{
+			continue;
+		}
+
+		std::string Name(AtomStart, Character);
+		++Atoms[Name];
+		++AtomCount;
+		AtomStart = Character;
+	}
+
+	// Seems like "Rn" Atoms, "Ar" Atoms and "Y" Atoms can only be generated through specific Atoms
+	// They also are not replaced by anything else. 
+	// "Y" only appears inbetween "Rn" and "Ar" in combination with another "normal" Atom
+	return AtomCount - Atoms["Rn"] - Atoms["Ar"] - (2 * Atoms["Y"]);
 }
