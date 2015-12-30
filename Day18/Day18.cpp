@@ -9,22 +9,31 @@ typedef std::array<bool, FieldSize> Row;
 typedef std::array<Row, FieldSize> Field;
 typedef std::shared_ptr<Field> PField;
 
+typedef std::pair<size_t, size_t> FieldCoord;
+typedef std::vector<FieldCoord> CoordVector;
+
 static PField CreateField(const std::string & InputFile);
-static size_t GetTurnedOnLights(PField Lights, size_t Steps);
+static size_t GetTurnedOnLights(PField Lights, size_t Steps, const CoordVector & StuckedLights = CoordVector());
 
 static bool GetNewLightSate(PField Lights, size_t X, size_t Y);
 static size_t GetTurnedOnNeighbors(PField Lights, size_t X, size_t Y);
+static void TurnOnStuckedLights(PField Lights, const CoordVector & StuckedLights, size_t & LightsOnCount);
 
 int main()
 {
 	PField Lights = CreateField("Input.txt");
 	size_t LightsOn = GetTurnedOnLights(Lights, 100);
 
-	std::cout << "Lights on: " << LightsOn << std::endl;
+	std::cout << "Lights on (non-stucked): " << LightsOn << std::endl;
+
+	Lights = CreateField("Input.txt");
+	LightsOn = GetTurnedOnLights(Lights, 100, { {0,0},{ 0,FieldSize - 1 },{ FieldSize - 1,0 },{ FieldSize - 1,FieldSize - 1 } });
+
+	std::cout << "Lights on (stucked): " << LightsOn << std::endl;
 
 	system("pause");
 
-    return 0;
+	return 0;
 }
 
 
@@ -47,10 +56,12 @@ static PField CreateField(const std::string & InputFile)
 	return Lights;
 }
 
-static size_t GetTurnedOnLights(PField Lights, size_t Steps)
+static size_t GetTurnedOnLights(PField Lights, size_t Steps, const CoordVector & StuckedLights)
 {
 	PField Buffer = std::make_shared<Field>();
 	size_t LightsOn = 0;
+
+	TurnOnStuckedLights(Lights, StuckedLights, LightsOn);
 
 	for (size_t i = 0; i < Steps; i++)
 	{
@@ -68,6 +79,7 @@ static size_t GetTurnedOnLights(PField Lights, size_t Steps)
 				}
 			}
 
+		TurnOnStuckedLights(Buffer, StuckedLights, LightsOn);
 		Buffer.swap(Lights);
 	}
 
@@ -105,4 +117,17 @@ static size_t GetTurnedOnNeighbors(PField Lights, size_t X, size_t Y)
 		}
 
 	return LightsOn;
+}
+
+static void TurnOnStuckedLights(PField Lights, const CoordVector & StuckedLights, size_t & LightsOnCount)
+{
+	for (const FieldCoord & StuckedLight : StuckedLights)
+	{
+		bool & Light = (*Lights)[StuckedLight.first][StuckedLight.second];
+		if (!Light)
+		{
+			Light = true;
+			++LightsOnCount;
+		}
+	}
 }
