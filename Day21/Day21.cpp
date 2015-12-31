@@ -116,12 +116,15 @@ static PCharacter LoadBoss(const std::string & FileName)
 {
 	StringVectorVector Input = GetFileLineParts(FileName);
 
-	return std::make_shared<Character>(std::atoi(Input[0][1].c_str()), std::atoi(Input[1][1].c_str()), std::atoi(Input[2][1].c_str()));
+	return std::make_shared<Character>(std::atoi(Input[0][2].c_str()), std::atoi(Input[1][1].c_str()), std::atoi(Input[2][1].c_str()));
 }
 
 static bool WouldPlayerWin(PCharacter Player)
 {
-	return (Player->GetDamagePerRound(Boss->Armor) >= Boss->GetDamagePerRound(Player->Armor));
+	size_t PlayerRoundsToKillBoss = ((Boss->Hitpoints - 1) / Player->GetDamagePerRound(Boss->Armor)) + 1;
+	size_t BossRoundsToKillPlayer = ((Player->Hitpoints - 1) / Boss->GetDamagePerRound(Player->Armor)) + 1;
+
+	return (PlayerRoundsToKillBoss <= BossRoundsToKillPlayer);
 }
 
 static size_t GetLeastAmountToSpendToWin()
