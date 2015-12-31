@@ -5,7 +5,22 @@
 
 static const size_t Input = 36000000;
 
+static void PartOne();
+static void PartTwo();
+
 int main()
+{
+	PartOne();
+
+	PartTwo();
+
+
+	system("pause");
+
+    return 0;
+}
+
+static void PartOne()
 {
 	// House Value = Acum( Dividors ) * 10
 	//  1: 1  - 1				= 1
@@ -54,18 +69,54 @@ int main()
 			}
 		}
 
-		
+		/*if ((Number % 10000) == 0)
+		{
+		std::cout << Number << ": " << Value << std::endl;
+		}*/
+
+	} while (Value < (Input / 10));
+
+	std::cout << "Part One: " << Number << " - " << Value << std::endl;
+}
+
+static void PartTwo()
+{
+	size_t Value = 0;
+	size_t Number = 0;
+
+	// 100: (217) 216 - (1,) 2, 4, 5, 10, 20, 25, 50, 100
+
+	do
+	{
+		Value = 0;
+		++Number;
+
+		size_t SqrRoot = (size_t)std::sqrt(Number);
+		size_t MinDividor = (((Number - 1) / 50) + 1);
+
+		for (size_t Dividor = 1; Dividor <= SqrRoot; Dividor++)
+		{
+			if ((Number % Dividor) == 0)
+			{
+				Value += (Dividor >= MinDividor) ? Dividor : 0;
+
+				size_t OtherDividor = (Number / Dividor);
+
+				if (Dividor != OtherDividor)
+				{
+					Value += (OtherDividor >= MinDividor) ? OtherDividor : 0;
+				}
+			}
+		}
+
+		Value *= 11;
+
 		/*if ((Number % 10000) == 0)
 		{
 			std::cout << Number << ": " << Value << std::endl;
 		}*/
-		
-	} while (Value < (Input / 10));
 
-	std::cout << Number << ": " << Value << std::endl;
+	} while (Value < Input);
 
-	system("pause");
-
-    return 0;
+	std::cout << "Part Two: " << Number << " - " << Value << std::endl;
 }
-
