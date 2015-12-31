@@ -54,20 +54,21 @@ struct Character {
 	}
 };
 
-typedef std::function <size_t(PCharacter, PCharacter)> SimpleItemFunction;
-typedef std::function <size_t(PCharacter, PCharacter, PItem)> ItemFunction;
+typedef std::function <size_t(PCharacter, bool, bool)> SimpleItemFunction;
+typedef std::function <size_t(PCharacter, bool, bool, PItem)> ItemFunction;
 
 static PCharacter LoadBoss(const std::string & FileName);
-static bool WouldPlayerWin(PCharacter Player, PCharacter Boss);
-static size_t GetLeastAmountToSpendToWin(PCharacter Boss);
+static bool WouldPlayerWin(PCharacter Player);
+static size_t GetLeastAmountToSpendToWin();
+static size_t GetMostAmountToSpendToStillLoose();
 
-static size_t ChooseWeapon(PCharacter Boss, PCharacter Player);
-static size_t ChooseArmor(PCharacter Boss, PCharacter Player);
-static size_t ChooseFirstRing(PCharacter Boss, PCharacter Player);
-static size_t ChooseSecondRing(PCharacter Boss, PCharacter Player, const PItem & FirstRing);
-static size_t CheckIfPlayerWouldWin(PCharacter Boss, PCharacter Player, const PItem & SecondRing);
+static size_t ChooseWeapon(PCharacter Player, bool PlayerShallWin, bool MinimizeGold);
+static size_t ChooseArmor(PCharacter Player, bool PlayerShallWin, bool MinimizeGold);
+static size_t ChooseFirstRing(PCharacter Player, bool PlayerShallWin, bool MinimizeGold);
+static size_t ChooseSecondRing(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const PItem & FirstRing);
+static size_t CheckIfPlayerWouldWin(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const PItem & Item = PItem());
 
-static size_t IterateOverItems(PCharacter Boss, PCharacter Player, const ItemVector & Items, ItemFunction NextFunction, const PItem & InvalidItem = PItem());
+static size_t IterateOverItems(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const ItemVector & Items, ItemFunction NextFunction, const PItem & InvalidItem = PItem());
 
 static ItemFunction GetSimpleNextFunctionCall(SimpleItemFunction Funtion);
 
@@ -96,13 +97,15 @@ static const ItemVector Rings({
 	std::make_shared<Item>(100,3,0),
 });
 
+static const PCharacter Boss = LoadBoss("Input.txt");
+
 int main()
 {
-	PCharacter Boss = LoadBoss("Input.txt");
+	size_t MinSpendGold = GetLeastAmountToSpendToWin();
+	size_t MaxSpendGold = GetMostAmountToSpendToStillLoose();
 
-	size_t MinSpendGold = GetLeastAmountToSpendToWin(Boss);
-
-	std::cout << "Spend Gold: " << MinSpendGold << std::endl;
+	std::cout << "Spend Gold (Part One): " << MinSpendGold << std::endl;
+	std::cout << "Spend Gold (Part Two): " << MaxSpendGold << std::endl;
 
 	system("pause");
 
@@ -116,57 +119,58 @@ static PCharacter LoadBoss(const std::string & FileName)
 	return std::make_shared<Character>(std::atoi(Input[0][1].c_str()), std::atoi(Input[1][1].c_str()), std::atoi(Input[2][1].c_str()));
 }
 
-static bool WouldPlayerWin(PCharacter Player, PCharacter Boss)
+static bool WouldPlayerWin(PCharacter Player)
 {
 	return (Player->GetDamagePerRound(Boss->Armor) >= Boss->GetDamagePerRound(Player->Armor));
 }
 
-static size_t GetLeastAmountToSpendToWin(PCharacter Boss)
+static size_t GetLeastAmountToSpendToWin()
 {
-	return ChooseWeapon(Boss, std::make_shared<Character>(100));
+	return ChooseWeapon(std::make_shared<Character>(100), true, true);
 }
 
-static size_t ChooseWeapon(PCharacter Boss, PCharacter Player)
+static size_t GetMostAmountToSpendToStillLoose()
 {
-	return IterateOverItems(Boss, Player, Weapons, GetSimpleNextFunctionCall(ChooseArmor));
+	return ChooseWeapon(std::make_shared<Character>(100), false, false);
 }
 
-static size_t ChooseArmor(PCharacter Boss, PCharacter Player)
+static size_t ChooseWeapon(PCharacter Player, bool PlayerShallWin, bool MinimizeGold)
 {
-	size_t ResultWithoutArmor = ChooseFirstRing(Boss, Player);
-	size_t ResultWitArmor = IterateOverItems(Boss, Player, Armor, GetSimpleNextFunctionCall(ChooseFirstRing));
-
-	return std::min(ResultWitArmor, ResultWithoutArmor);
+	return IterateOverItems(Player, PlayerShallWin, MinimizeGold, Weapons, GetSimpleNextFunctionCall(ChooseArmor));
 }
 
-static size_t ChooseFirstRing(PCharacter Boss, PCharacter Player)
+static size_t ChooseArmor(PCharacter Player, bool PlayerShallWin, bool MinimizeGold)
 {
-	if (WouldPlayerWin(Player, Boss))
-	{
-		return Player->SpendGold;
-	}
+	size_t ResultWithoutArmor = ChooseFirstRing(Player, PlayerShallWin, MinimizeGold);
+	size_t ResultWitArmor = IterateOverItems(Player, PlayerShallWin, MinimizeGold, Armor, GetSimpleNextFunctionCall(ChooseFirstRing));
 
-	return IterateOverItems(Boss, Player, Rings, ChooseSecondRing);
+	return (MinimizeGold) ? std::min(ResultWitArmor, ResultWithoutArmor) : std::max(ResultWitArmor, ResultWithoutArmor);
 }
 
-static size_t ChooseSecondRing(PCharacter Boss, PCharacter Player, const PItem & FirstRing)
+static size_t ChooseFirstRing(PCharacter Player, bool PlayerShallWin, bool MinimizeGold)
 {
-	if (WouldPlayerWin(Player, Boss))
-	{
-		return Player->SpendGold;
-	}
+	size_t ResultWithoutAnyRings = CheckIfPlayerWouldWin(Player, PlayerShallWin, MinimizeGold);
+	size_t ResultWithRings = IterateOverItems(Player, PlayerShallWin, MinimizeGold, Rings, ChooseSecondRing);
 
-	return IterateOverItems(Boss, Player, Rings, CheckIfPlayerWouldWin);
+	return (MinimizeGold) ? std::min(ResultWithoutAnyRings, ResultWithRings) : std::max(ResultWithoutAnyRings, ResultWithRings);
 }
 
-static size_t CheckIfPlayerWouldWin(PCharacter Boss, PCharacter Player, const PItem & SecondRing)
+static size_t ChooseSecondRing(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const PItem & FirstRing)
 {
-	return (WouldPlayerWin(Player, Boss)) ? Player->SpendGold : SIZE_MAX;
+	size_t ResultWithoutAnyRings = CheckIfPlayerWouldWin(Player, PlayerShallWin, MinimizeGold);
+	size_t ResultWithRings = IterateOverItems(Player, PlayerShallWin, MinimizeGold, Rings, CheckIfPlayerWouldWin, FirstRing);
+
+	return (MinimizeGold) ? std::min(ResultWithoutAnyRings, ResultWithRings) : std::max(ResultWithoutAnyRings, ResultWithRings);
 }
 
-static size_t IterateOverItems(PCharacter Boss, PCharacter Player, const ItemVector & Items, ItemFunction NextFunction, const PItem & InvalidItem)
+static size_t CheckIfPlayerWouldWin(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const PItem & Item)
 {
-	size_t MinGoldSpend = SIZE_MAX;
+	return (WouldPlayerWin(Player) == PlayerShallWin) ? Player->SpendGold : (MinimizeGold) ? SIZE_MAX : 0;
+}
+
+static size_t IterateOverItems(PCharacter Player, bool PlayerShallWin, bool MinimizeGold, const ItemVector & Items, ItemFunction NextFunction, const PItem & InvalidItem)
+{
+	size_t BestGoldSpend = (MinimizeGold) ? SIZE_MAX : 0;
 
 	for (const PItem & Item : Items)
 	{
@@ -175,18 +179,18 @@ static size_t IterateOverItems(PCharacter Boss, PCharacter Player, const ItemVec
 			continue;
 		}
 
-		size_t GoldSpend = NextFunction(Boss, std::make_shared<Character>(Player, Item), Item);
+		size_t GoldSpend = NextFunction(std::make_shared<Character>(Player, Item), PlayerShallWin, MinimizeGold, Item);
 
-		if (GoldSpend < MinGoldSpend)
+		if ((MinimizeGold && (GoldSpend < BestGoldSpend)) || (!MinimizeGold && (GoldSpend > BestGoldSpend)))
 		{
-			MinGoldSpend = GoldSpend;
+			BestGoldSpend = GoldSpend;
 		}
 	}
 
-	return MinGoldSpend;
+	return BestGoldSpend;
 }
 
 static ItemFunction GetSimpleNextFunctionCall(SimpleItemFunction Funtion)
 {
-	return [Funtion](PCharacter Boss, PCharacter Player, PItem Item)->size_t { return Funtion(Boss, Player); };
+	return [Funtion](PCharacter Player, bool PlayerShallWin, bool MinimizeGold, PItem Item)->size_t { return Funtion(Player, PlayerShallWin, MinimizeGold); };
 }
