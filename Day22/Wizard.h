@@ -28,6 +28,7 @@ public:
 	bool CastRecharge();
 
 	virtual void ApplyDamage(size_t Damage) override;
+	void ApplyPureDamage(size_t Damage);
 	void ApplyEffects();
 	void ReplenishMana(size_t Mana);
 

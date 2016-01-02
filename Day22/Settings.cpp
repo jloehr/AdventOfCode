@@ -22,3 +22,4 @@ const size_t DrainHeal = 2;
 
 const size_t PlayerStartingHitpoints = 50;
 const size_t PlayerStartingMana = 500;
+const size_t PlayerHardModeDamage = 1;

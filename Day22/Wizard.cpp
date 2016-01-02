@@ -126,6 +126,11 @@ void Wizard::ApplyDamage(size_t Damage)
 	LivingCreature::ApplyDamage(Damage);
 }
 
+void Wizard::ApplyPureDamage(size_t Damage)
+{
+	LivingCreature::ApplyDamage(Damage);
+}
+
 void Wizard::ApplyEffects()
 {
 	ShieldEffect.Update();

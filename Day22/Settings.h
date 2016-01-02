@@ -21,3 +21,5 @@ extern const size_t DrainHeal;
 
 extern const size_t PlayerStartingHitpoints;
 extern const size_t PlayerStartingMana;
+
+extern const size_t PlayerHardModeDamage;

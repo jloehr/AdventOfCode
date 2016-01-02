@@ -13,10 +13,10 @@ typedef std::set<BattleState, BattleStateComparator> BattleStateSet;
 typedef std::vector<BattleState> BattleStateVector;
 
 static PEnemy LoadBoss(const std::string & InputFile);
-static size_t GetLEastAmountOfManaToSpendToKillBoss();
+static size_t GetLEastAmountOfManaToSpendToKillBoss(bool HardMode);
 
 static bool BossTurn(BattleState State);
-static BattleStateVector PlayerTurn(BattleState State);
+static BattleStateVector PlayerTurn(BattleState State, bool HardMode);
 static void PreTurn(BattleState State);
 
 static BattleStateComparator SortAscBySpendMana = [](const BattleState & A, const BattleState & B)->bool 
@@ -67,9 +67,11 @@ static BattleStateComparator SortAscBySpendMana = [](const BattleState & A, cons
 
 int main()
 {
-	size_t SpendMana = GetLEastAmountOfManaToSpendToKillBoss();
+	size_t SpendMana = GetLEastAmountOfManaToSpendToKillBoss(false);
+	size_t SpendManaHardMode = GetLEastAmountOfManaToSpendToKillBoss(true);
 
 	std::cout << "Spend Mana: " << SpendMana << std::endl;
+	std::cout << "Spend Mana (Hard Mode): " << SpendManaHardMode << std::endl;
 
 	system("pause");
 
@@ -83,7 +85,7 @@ static PEnemy LoadBoss(const std::string & InputFile)
 	return std::make_shared<Enemy>(std::atoi(InputParts[0][2].c_str()), std::atoi(InputParts[1][1].c_str()));
 }
 
-static size_t GetLEastAmountOfManaToSpendToKillBoss()
+static size_t GetLEastAmountOfManaToSpendToKillBoss(bool HardMode)
 {
 	PEnemy Boss = LoadBoss("Input.txt");
 	PWizard Player = std::make_shared<Wizard>(PlayerStartingHitpoints, PlayerStartingMana);
@@ -103,7 +105,7 @@ static size_t GetLEastAmountOfManaToSpendToKillBoss()
 		BattleState CurrentState = (*BestStateIter);
 		BattleStates.erase(BestStateIter);
 
-		BattleStateVector NewStates = PlayerTurn(CurrentState);
+		BattleStateVector NewStates = PlayerTurn(CurrentState, HardMode);
 		for (BattleState & NewState : NewStates)
 		{
 			BattleStates.insert(NewState);
@@ -130,10 +132,19 @@ static bool BossTurn(BattleState State)
 	return Player->IsAlive();
 }
 
-static BattleStateVector PlayerTurn(BattleState State)
+static BattleStateVector PlayerTurn(BattleState State, bool HardMode)
 {
 	PEnemy Boss = State.first;
 	PWizard Player = State.second;
+
+	if (HardMode)
+	{
+		Player->ApplyPureDamage(PlayerHardModeDamage);
+		if (!Player->IsAlive())
+		{
+			return BattleStateVector();
+		}
+	}
 
 	PreTurn(State);
 	if (!Boss->IsAlive())
