@@ -15,6 +15,10 @@ struct CPUState {
 	CPUState()
 		:InstructionPointer(0), a(0), b(0)
 	{}
+
+	CPUState(size_t a, size_t b)
+		:InstructionPointer(0), a(a), b(b)
+	{}
 };
 
 typedef std::function<void(CPUState &)> InstructionFunction;
@@ -24,7 +28,7 @@ typedef std::function<size_t&(CPUState &)> RegisterFetchFunction;
 typedef std::map<std::string, RegisterFetchFunction> StringRegisterFetchFunctionMap;
 
 
-static CPUState Run(const std::string & InputFile);
+static CPUState Run(const std::string & InputFile, CPUState CPU = CPUState());
 static InstructionFunction ParseAssembly(const StringVector & Line);
 
 static const StringOpCodeMap StringToOpCodeMap({ { "hlf", hlf },{ "tpl", tpl },{ "inc", inc },{ "jmp", jmp },{ "jie", jie },{ "jio", jio }, });
@@ -32,9 +36,11 @@ static const StringRegisterFetchFunctionMap StringToRegisterFetch({ {"a", [](CPU
 
 int main()
 {
-	CPUState State = Run("Input.txt");
+	CPUState PartOne = Run("Input.txt");
+	CPUState PartTwo = Run("Input.txt", CPUState(1, 0));
 
-	std::cout << "b: " << State.b << std::endl;
+	std::cout << "b (Part One): " << PartOne.b << std::endl;
+	std::cout << "b (Part Two): " << PartTwo.b << std::endl;
 
 	system("pause");
 
@@ -42,12 +48,11 @@ int main()
 }
 
 
-static CPUState Run(const std::string & InputFile)
+static CPUState Run(const std::string & InputFile, CPUState CPU)
 {
 	StringVectorVector InputParts = GetFileLineParts(InputFile);
 	InstructionVector ParsedInstructions(InputParts.size(), nullptr);
 
-	CPUState CPU;
 	while (CPU.InstructionPointer < ParsedInstructions.size())
 	{
 		if (!ParsedInstructions[CPU.InstructionPointer])
