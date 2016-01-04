@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include <algorithm>
 #include <functional>
 
 #include "../Common/Common.h"

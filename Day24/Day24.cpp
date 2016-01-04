@@ -10,26 +10,31 @@ typedef std::multiset<IntIterVector, IntIterVectorComparatorFunction> IntIterVec
 
 
 static IntVector GetPackages(const std::string & InputFile);
-static size_t GetQuantumEntanglementOfBestConfig();
-static size_t GetBestQuantumEntanglemenForPackageCount(size_t PackageCount, size_t PassengerWeight);
+static size_t GetQuantumEntanglementOfBestConfig(const size_t Groups);
+static size_t GetBestQuantumEntanglemenForPackageCount(const size_t PackageCount, const size_t PassengerWeight, const size_t Groups);
 
 static size_t CalculateTotalWeight();
 static IntIterVectorSet GenerateConfigurationForPackageCount(size_t PackageCount, size_t PassengerWeight);
 static void RecousiveGenerateConfigurationForPackageCount(size_t PackagesLeft, const size_t ConfigurationWeight, const size_t PassengerWeight, IntVector::const_iterator LastPackage, IntIterVector & CurrentConfiguration, IntIterVectorSet & Configurations);
 
-static bool TryToFindEquilibrium(const size_t PassengerWeight, const IntIterVector & UsedPackages); 
-static bool TryToFindEquilibriumRecoursive(const size_t PassengerWeight, IntIterVector::const_iterator UsedPackagesIter, IntIterVector::const_iterator UsedPackagesIterEnd, size_t Group2, size_t Group3, IntVector::const_iterator CurrentPackage);
+static bool TryToFindEquilibrium(const size_t PassengerWeight, const IntIterVector & UsedPackages, const size_t Groups);
+static bool TryToFindEquilibriumRecoursive(const size_t PassengerWeight, IntIterVector::const_iterator UsedPackagesIter, IntIterVector::const_iterator UsedPackagesIterEnd, IntVector & OtherGroups, IntVector::const_iterator CurrentPackage);
 
 static size_t CalculateQuantEnt(const IntIterVector & Packages);
 static bool SortByQuantEnt(const IntIterVector & A, const IntIterVector & B);
+
+static bool AllTheSame(const IntVector & Groups);
+static bool AnyGreaterThan(const IntVector & Groups, const size_t Max);
 
 static const IntVector Packages = GetPackages("Input.txt");
 
 int main()
 {
-	size_t QuantumEntanglement = GetQuantumEntanglementOfBestConfig();
+	size_t QuantumEntanglement = GetQuantumEntanglementOfBestConfig(3);
+	std::cout << "Quantum Entanglement (Part One): " << QuantumEntanglement << std::endl;
 
-	std::cout << "Quantum Entanglement: " << QuantumEntanglement << std::endl;
+	QuantumEntanglement = GetQuantumEntanglementOfBestConfig(4);
+	std::cout << "Quantum Entanglement (Part Two): " << QuantumEntanglement << std::endl;
 
 	system("pause");
 
@@ -50,20 +55,20 @@ static IntVector GetPackages(const std::string & InputFile)
 	return IntVector(Packages.rbegin(), Packages.rend());
 }
 
-static size_t GetQuantumEntanglementOfBestConfig()
+static size_t GetQuantumEntanglementOfBestConfig(const size_t Groups)
 {
 	size_t BestQuantumEntanglement = SIZE_MAX;
-	size_t PassengerWeight = CalculateTotalWeight() / 3;
+	size_t PassengerWeight = CalculateTotalWeight() / Groups;
 
 	for (size_t PackageCountInPassengerCompartement = 1; (PackageCountInPassengerCompartement < Packages.size()) && (BestQuantumEntanglement == SIZE_MAX); PackageCountInPassengerCompartement++)
 	{
-		BestQuantumEntanglement = GetBestQuantumEntanglemenForPackageCount(PackageCountInPassengerCompartement, PassengerWeight);
+		BestQuantumEntanglement = GetBestQuantumEntanglemenForPackageCount(PackageCountInPassengerCompartement, PassengerWeight, Groups - 1);
 	}
 
 	return BestQuantumEntanglement;
 }
 
-static size_t GetBestQuantumEntanglemenForPackageCount(size_t PackageCount, size_t PassengerWeight)
+static size_t GetBestQuantumEntanglemenForPackageCount(const size_t PackageCount, const size_t PassengerWeight, const size_t Groups)
 {
 	IntIterVectorSet AllGroupOneConfigurations = GenerateConfigurationForPackageCount(PackageCount, PassengerWeight);
 
@@ -78,7 +83,7 @@ static size_t GetBestQuantumEntanglemenForPackageCount(size_t PackageCount, size
 			ConfigWeight += (*Number);
 		}
 
-		bool EquilibriumFound = TryToFindEquilibrium(ConfigWeight, Configuration);
+		bool EquilibriumFound = TryToFindEquilibrium(ConfigWeight, Configuration, Groups);
 
 		if (EquilibriumFound)
 		{
@@ -143,39 +148,40 @@ static void RecousiveGenerateConfigurationForPackageCount(size_t PackagesLeft, c
 	}
 }
 
-static bool TryToFindEquilibrium(const size_t PassengerWeight, const IntIterVector & UsedPackages)
+static bool TryToFindEquilibrium(const size_t PassengerWeight, const IntIterVector & UsedPackages, const size_t Groups)
 {
-	return TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackages.begin(), UsedPackages.end(), 0, 0, Packages.begin());
+	IntVector OtherGroups(Groups, 0);
+	return TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackages.begin(), UsedPackages.end(), OtherGroups, Packages.begin());
 }
 
-static bool TryToFindEquilibriumRecoursive(const size_t PassengerWeight, IntIterVector::const_iterator UsedPackagesIter, IntIterVector::const_iterator UsedPackagesIterEnd, size_t Group2, size_t Group3, IntVector::const_iterator CurrentPackage)
+static bool TryToFindEquilibriumRecoursive(const size_t PassengerWeight, IntIterVector::const_iterator UsedPackagesIter, IntIterVector::const_iterator UsedPackagesIterEnd, IntVector & OtherGroups, IntVector::const_iterator CurrentPackage)
 {
 	if (CurrentPackage == Packages.end())
 	{
-		return (Group2 == Group3);
+		return AllTheSame(OtherGroups);
 	}
 
-	if ((Group2 > PassengerWeight) || (Group3 > PassengerWeight))
+	if (AnyGreaterThan(OtherGroups, PassengerWeight))
 	{
 		return false;
 	}
 
 	if ((UsedPackagesIter != UsedPackagesIterEnd) && (CurrentPackage == (*UsedPackagesIter)))
 	{
-		return TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackagesIter + 1, UsedPackagesIterEnd, Group2, Group3, CurrentPackage + 1);
+		return TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackagesIter + 1, UsedPackagesIterEnd, OtherGroups, CurrentPackage + 1);
 	}
 
-	if (Group3 < Group2)
+	for (IntVector::iterator Group = OtherGroups.begin(); Group != OtherGroups.end(); ++Group)
 	{
-		std::swap(Group2, Group3);
+		(*Group) += (*CurrentPackage);
+		if (TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackagesIter, UsedPackagesIterEnd, OtherGroups, CurrentPackage + 1))
+		{
+			return true;
+		}	
+		(*Group) -= (*CurrentPackage);
 	}
 
-	if(TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackagesIter, UsedPackagesIterEnd, Group2 + (*CurrentPackage), Group3, CurrentPackage + 1))
-	{
-		return true;
-	}
-
-	return TryToFindEquilibriumRecoursive(PassengerWeight, UsedPackagesIter, UsedPackagesIterEnd, Group2, Group3 + (*CurrentPackage), CurrentPackage + 1);
+	return false;
 }
 
 static size_t CalculateQuantEnt(const IntIterVector & Packages)
@@ -193,4 +199,30 @@ static size_t CalculateQuantEnt(const IntIterVector & Packages)
 static bool SortByQuantEnt(const IntIterVector & A, const IntIterVector & B)
 {
 	return (CalculateQuantEnt(A) < CalculateQuantEnt(B));
+}
+
+static bool AllTheSame(const IntVector & Groups)
+{
+	for (IntVector::const_iterator Group = Groups.begin(); (Group + 1) != Groups.end(); ++Group)
+	{
+		if ((*Group) != (*(Group + 1)))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool AnyGreaterThan(const IntVector & Groups, const size_t Max)
+{
+	for (size_t Value : Groups)
+	{
+		if (Value > Max)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
