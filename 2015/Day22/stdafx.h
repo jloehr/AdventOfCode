@@ -10,9 +10,13 @@
 #include <stdio.h>
 #include <tchar.h>
 
-#include <memory>
 #include <set>
+#include <vector>
 
-#include "../Common/Common.h"
+#include <algorithm>
+#include <functional>
+#include <memory>
+
+#include "../../Common/Common.h"
 
 // TODO: reference additional headers your program requires here

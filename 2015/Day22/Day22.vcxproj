@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DCA89020-A81F-43E9-9540-F1FC93D3E788}</ProjectGuid>
+    <ProjectGuid>{1094AC30-DE74-48E0-8AC1-BD2F7548F2CF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Day17</RootNamespace>
+    <RootNamespace>Day22</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -142,23 +142,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="Effect.h" />
+    <ClInclude Include="LivingCreature.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Wizard.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Day17.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Day22.cpp" />
+    <ClCompile Include="LivingCreature.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Wizard.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Input.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.vcxproj">
+    <ProjectReference Include="..\..\Common\Common.vcxproj">
       <Project>{1b72c39f-8fc6-410b-a3cc-7dcced09b096}</Project>
     </ProjectReference>
   </ItemGroup>

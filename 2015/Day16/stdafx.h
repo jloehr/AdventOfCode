@@ -10,12 +10,17 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+#include <map>
+#include <vector>
 #include <array>
 
-#include <memory>
 #include <functional>
-#include <algorithm>
 
-#include "../Common/Common.h"
+#include "../../Common/Common.h"
 
 // TODO: reference additional headers your program requires here

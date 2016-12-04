@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{619176B1-CE17-47E9-B650-36F03ACAC939}</ProjectGuid>
+    <ProjectGuid>{DCA89020-A81F-43E9-9540-F1FC93D3E788}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Day21</RootNamespace>
+    <RootNamespace>Day17</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -146,7 +146,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Day21.cpp" />
+    <ClCompile Include="Day17.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -155,12 +155,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.vcxproj">
-      <Project>{1b72c39f-8fc6-410b-a3cc-7dcced09b096}</Project>
-    </ProjectReference>
+    <Text Include="Input.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Input.txt" />
+    <ProjectReference Include="..\..\Common\Common.vcxproj">
+      <Project>{1b72c39f-8fc6-410b-a3cc-7dcced09b096}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

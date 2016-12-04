@@ -19,9 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{49450B00-6236-4714-86E2-8BED87444ED4}</ProjectGuid>
+    <ProjectGuid>{2F291EEF-A410-4613-9283-1AC755E2B340}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Day16</RootNamespace>
+    <RootNamespace>Day18</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -146,7 +146,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Day16.cpp" />
+    <ClCompile Include="Day18.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -156,10 +156,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Input.txt" />
-    <Text Include="TickerInput.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Common\Common.vcxproj">
+    <ProjectReference Include="..\..\Common\Common.vcxproj">
       <Project>{1b72c39f-8fc6-410b-a3cc-7dcced09b096}</Project>
     </ProjectReference>
   </ItemGroup>
