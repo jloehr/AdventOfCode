@@ -3,40 +3,38 @@
 
 #include "stdafx.h"
 
+#include "TriangleTest.h"
+
 int main()
 {
-	signed ValidTriangles = 0;
+	signed ValidRowTriangles = 0;
+	signed ValidColumnTriangles = 0;
 
 	StringVectorVector Lines = GetFileLineParts("Input.txt");
 
+	TriangleTest RowTest;
+	std::array<TriangleTest, 3> ColumnTest;
+
 	for (const StringVector & Line : Lines)
 	{
-		signed BiggestSide = 0;
-		signed OtherSides = 0;
-
 		for (int i = 0; i < Line.size(); i++)
 		{
 			signed Side = std::atoi(Line[i].c_str());
 
-			if (Side > BiggestSide)
+			if (RowTest.PushSide(Side))
 			{
-				OtherSides += BiggestSide;
-				BiggestSide = Side;
+				ValidRowTriangles++;
 			}
-			else
-			{
-				OtherSides += Side;
-			}
-		}
 
-		if (OtherSides > BiggestSide)
-		{
-			ValidTriangles++;
+			if (ColumnTest[i].PushSide(Side))
+			{
+				ValidColumnTriangles++;
+			}
 		}
 	}
 
-
-	std::cout << "Valid Triangels: " << ValidTriangles << std::endl;
+	std::cout << "Valid Row Triangels: " << ValidRowTriangles << std::endl;
+	std::cout << "Valid Column Triangels: " << ValidColumnTriangles << std::endl;
 
 	system("pause");
 }
