@@ -4,11 +4,14 @@
 #include "stdafx.h"
 
 enum class Direction { North, East, South, West };
+typedef std::pair<signed, signed> Coordinate;
+typedef std::set<Coordinate> CoordinateSet;
+typedef std::vector<Coordinate> CoordinateVector;
 
 void Rotate(char Instruction, Direction & Heading);
 void RotateRight(Direction & Heading);
 void RotateLeft(Direction & Heading);
-void Advance(std::pair<signed, signed> & Position, const Direction Heading, int Steps);
+void Advance(Coordinate & Position, const Direction Heading, int Steps, CoordinateSet & History, CoordinateVector & Crossings);
 
 int main()
 {
@@ -17,7 +20,9 @@ int main()
 	for (const StringVector & Line : File)
 	{
 		Direction Heading = Direction::North;
-		std::pair<signed, signed> Position(0, 0);
+		Coordinate Position(0, 0);
+		CoordinateSet History({ Position });
+		CoordinateVector Crossings;
 
 		for (std::string Instruction : Line)
 		{
@@ -25,10 +30,14 @@ int main()
 
 			int Steps = std::atoi(Instruction.c_str() + 1);
 
-			Advance(Position, Heading, Steps);
+			Advance(Position, Heading, Steps, History, Crossings);
 		}
 
 		std::cout << "Distance: " << (std::abs(Position.first) + std::abs(Position.second)) << std::endl;
+		if (!Crossings.empty())
+		{
+			std::cout << "Actual Distance: " << (std::abs(Crossings[0].first) + std::abs(Crossings[0].second)) << std::endl;
+		}
 	}
 
 	system("Pause");
@@ -90,21 +99,35 @@ void RotateLeft(Direction & Heading)
 	}
 }
 
-void Advance(std::pair<signed, signed> & Position, const Direction Heading, int Steps)
+void Advance(Coordinate & Position, const Direction Heading, int Steps, CoordinateSet & History, CoordinateVector & Crossings)
 {
+	std::function<void()> Step = nullptr;
+
 	switch (Heading)
 	{
 	case Direction::North:
-		Position.second += Steps;
+		Step = [&]() { Position.second++; };
 		break;
 	case Direction::East:
-		Position.first += Steps;
+		Step = [&]() { Position.first++; };
 		break;
 	case Direction::South:
-		Position.second -= Steps;
+		Step = [&]() { Position.second--; };
 		break;
 	case Direction::West:
-		Position.first -= Steps;
+		Step = [&]() { Position.first--; };
 		break;
 	}
+
+	for (int i = 0; i < Steps; i++)
+	{
+		Step();
+		auto Result = History.insert(Position);
+
+		if (!Result.second)
+		{
+			Crossings.push_back(Position);
+		}
+	}
+
 }
