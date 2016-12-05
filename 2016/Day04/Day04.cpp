@@ -6,15 +6,39 @@
 typedef std::map<char, unsigned> CharacterCountMap;
 typedef std::pair<char, unsigned> CharUIntPair;
 typedef std::vector<CharUIntPair> CharUIntVector;
+typedef std::pair<std::string, unsigned> StringUIntPair;
+typedef std::vector<StringUIntPair> StringUIntVector;
 
+StringUIntVector GetValidRooms(const StringVector & Lines);
 CharacterCountMap CountCharacters(const std::string & String, size_t Length);
 bool ValidateCheckSum(const CharacterCountMap & CharacterCount, const std::string & CheckSum);
 
+unsigned DecryptNamesAndAccumulateSetorIDs(StringUIntVector & ValidRooms);
+
 int main()
 {
-	unsigned SectorIDSum = 0;
+	const std::string RoomName("northpole object storage");
 
 	StringVector Lines = GetFileLines("Input.txt");
+	StringUIntVector ValidRooms = GetValidRooms(Lines);
+	unsigned SectorIDSum = DecryptNamesAndAccumulateSetorIDs(ValidRooms);
+
+	std::cout << "Sector ID Sum: " << SectorIDSum << std::endl;
+
+	for (auto Pair : ValidRooms)
+	{
+		if (Pair.first == RoomName)
+		{
+			std::cout << Pair.first << " - " << Pair.second << std::endl;
+		}
+	}
+
+	system("pause");
+}
+
+StringUIntVector GetValidRooms(const StringVector & Lines)
+{
+	StringUIntVector ValidRooms;
 
 	for (const std::string & Line : Lines)
 	{
@@ -29,13 +53,11 @@ int main()
 
 		if (ValidateCheckSum(CharacterCount, CheckSum))
 		{
-			SectorIDSum += SectorID;
+			ValidRooms.emplace_back(Line.substr(0, SectorIDStart - 1), SectorID);
 		}
 	}
 
-	std::cout << "Sector ID Sum: " << SectorIDSum << std::endl;
-
-	system("pause");
+	return ValidRooms;
 }
 
 CharacterCountMap CountCharacters(const std::string & String, size_t Length)
@@ -83,4 +105,28 @@ bool ValidateCheckSum(const CharacterCountMap & CharacterCount, const std::strin
 	}
 
 	return true;
+}
+
+unsigned DecryptNamesAndAccumulateSetorIDs(StringUIntVector & ValidRooms)
+{
+	unsigned SectorIDSum = 0;
+
+	for (auto & Room : ValidRooms)
+	{
+		SectorIDSum += Room.second;
+
+		for (char & Character : Room.first)
+		{
+			if (Character == '-')
+			{
+				Character = ' ';
+			}
+			else
+			{
+				Character = (((Character - 'a') + Room.second) % 26) + 'a';
+			}
+		}
+	}
+
+	return SectorIDSum;
 }
