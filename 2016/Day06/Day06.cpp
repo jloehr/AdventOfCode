@@ -3,11 +3,12 @@
 
 #include "stdafx.h"
 
+typedef std::pair<char, unsigned> CharUIntPair;
 typedef std::map<char, unsigned> CharUIntMap;
 typedef std::vector<CharUIntMap> CharUIntMapVector;
 
 CharUIntMapVector GetLetterFrequency(const StringVector & Lines);
-std::string GetErrorCorrectedMessage(const CharUIntMapVector & LetterFrequency);
+void GetErrorCorrectedMessage(const CharUIntMapVector & LetterFrequency, std::string & MostFrequentMessage, std::string & LeastFrequentMessage);
 
 int main()
 {
@@ -15,9 +16,13 @@ int main()
 
 	CharUIntMapVector LetterFrequency = GetLetterFrequency(Lines);
 
-	std::string Message = GetErrorCorrectedMessage(LetterFrequency);
+	std::string MostFrequentMessage;
+	std::string LeastFrequentMessage;
+	
+	GetErrorCorrectedMessage(LetterFrequency, MostFrequentMessage, LeastFrequentMessage);
 
-	std::cout << "Message: " << Message << std::endl;
+	std::cout << "Message Part One: " << MostFrequentMessage << std::endl;
+	std::cout << "Message Part Two: " << LeastFrequentMessage << std::endl;
 
 	system("pause");
 }
@@ -40,27 +45,33 @@ CharUIntMapVector GetLetterFrequency(const StringVector & Lines)
 }
 
 
-std::string GetErrorCorrectedMessage(const CharUIntMapVector & LetterFrequency)
+void GetErrorCorrectedMessage(const CharUIntMapVector & LetterFrequency, std::string & MostFrequentMessage, std::string & LeastFrequentMessage)
 {
-	std::string Message;
+	MostFrequentMessage.clear();
+	LeastFrequentMessage.clear();
 
 	for (const CharUIntMap & LetterCountMap : LetterFrequency)
 	{
-		char Letter = '*';
-		signed Count = 0;
+		CharUIntPair MostFrequentLetter('*', 0);
+		CharUIntPair LeastFrequentLetter('*', UINT_MAX);
 
 		for (auto & LetterCount : LetterCountMap)
 		{
-			if (LetterCount.second > Count)
+			if (LetterCount.second > MostFrequentLetter.second)
 			{
-				Letter = LetterCount.first;
-				Count = LetterCount.second;
+				MostFrequentLetter.first = LetterCount.first;
+				MostFrequentLetter.second = LetterCount.second;
+			}
+
+			if (LetterCount.second < LeastFrequentLetter.second)
+			{
+				LeastFrequentLetter.first = LetterCount.first;
+				LeastFrequentLetter.second = LetterCount.second;
 			}
 		}
 
-		Message += Letter;
+		MostFrequentMessage += MostFrequentLetter.first;
+		LeastFrequentMessage += LeastFrequentLetter.first;
 	}
-
-	return Message;
 }
 
