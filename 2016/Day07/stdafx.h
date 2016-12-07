@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <tchar.h>
 
+#include <set>
+#include <memory>
+
 #include "../../Common/Common.h"
 
 // TODO: reference additional headers your program requires here
