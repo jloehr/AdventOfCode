@@ -11,6 +11,7 @@ typedef std::array<std::bitset<DisplayHeight>, DisplayWidth> BitArray;
 void Rectangle(const StringVector & Line, BitArray & Display);
 void RotateRow(const StringVector & Line, BitArray & Display);
 void RotateColumn(const StringVector & Line, BitArray & Display);
+void PrintDisplay(const BitArray & Display);
 
 int main()
 {
@@ -41,6 +42,9 @@ int main()
 	}
 
 	std::cout << "Pixel Count: " << BitCount << std::endl;
+
+	PrintDisplay(Display);
+
 	system("pause");
 
     return 0;
@@ -109,4 +113,19 @@ void RotateColumn(const StringVector & Line, BitArray & Display)
 	Count %= DisplayHeight;
 
 	Display[Position] = (Display[Position] << Count | Display[Position] >> (DisplayHeight - Count));
+}
+
+void PrintDisplay(const BitArray & Display)
+{
+	for (int y = 0; y < DisplayHeight; y++)
+	{
+		for (int x = 0; x < DisplayWidth; x++)
+		{
+			std::cout << (Display[x][y] ? "#" : " ");
+		}
+
+		std::cout << std::endl;
+	}
+
+	std::cout << std::endl;
 }
