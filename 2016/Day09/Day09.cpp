@@ -3,51 +3,45 @@
 
 #include "stdafx.h"
 
-uint64_t GetDecompressionLength(const std::string & String, bool SinglePass);
+uint64_t GetDecompressionLength(std::string::const_iterator Start, std::string::const_iterator End, bool SinglePass);
 
 int main()
 {
 	std::string Input = GetFileLines("Input.txt")[0];
 
-	std::cout << "Part One: " << GetDecompressionLength(Input, true) << std::endl;
-	std::cout << "Part Two: " << GetDecompressionLength(Input, false) << std::endl;
+	std::cout << "Part One: " << GetDecompressionLength(Input.begin(), Input.end(), true) << std::endl;
+	std::cout << "Part Two: " << GetDecompressionLength(Input.begin(), Input.end(), false) << std::endl;
 
 	system("pause");
 }
 
-uint64_t GetDecompressionLength(const std::string & String, bool SinglePass)
+uint64_t GetDecompressionLength(std::string::const_iterator It, std::string::const_iterator End, bool SinglePass)
 {
 	uint64_t Length = 0;
 	uint64_t SequenceLength = 0;
-	std::string Temp;
-	bool RecordTemp = false;
+	uint64_t Times = 0;
+	bool InsideMarker = false;
 
-	for (auto It = String.begin(); It != String.end(); It++)
+	for (; It != End; It++)
 	{
 		switch (*It)
 		{
 		case '(':
-			RecordTemp = true;
+			InsideMarker = true;
+			SequenceLength = std::stoull(&(*(It + 1)));
 			break;
 		case 'x':
-			SequenceLength = std::stoull(Temp);
-			Temp.clear();
+			Times = std::stoull(&(*(It + 1)));
 			break;
 		case ')':
 		{
-			uint64_t Times = std::stoull(Temp);
-			Temp.clear();
-			Length += Times * (SinglePass ? SequenceLength : GetDecompressionLength(std::string(It + 1, It + SequenceLength + 1), false));
+			Length += Times * (SinglePass ? SequenceLength : GetDecompressionLength(It + 1, It + SequenceLength + 1, false));
 			It += SequenceLength;
-			RecordTemp = false;;
+			InsideMarker = false;
 			break;
 		}
 		default:
-			if (RecordTemp)
-			{
-				Temp += *It;
-			}
-			else
+			if (!InsideMarker)
 			{
 				Length++;
 			}
