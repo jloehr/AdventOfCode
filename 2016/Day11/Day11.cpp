@@ -3,7 +3,13 @@
 
 #include "stdafx.h"
 
+#define ParTwo
+
+#ifndef ParTwo 
 constexpr size_t ElementCount = 5;
+#else
+constexpr size_t ElementCount = 7;
+#endif
 constexpr size_t FloorCount = 4;
 
 typedef std::bitset<ElementCount> ComponentStatus;
@@ -68,6 +74,14 @@ int main()
 	StringVectorVector Lines = GetFileLineParts("Input.txt");
 
 	Compound Facility = CreateCompund(Lines);
+
+#ifdef ParTwo 
+	Facility[0].Generators.set(5);
+	Facility[0].Chips.set(5);
+	Facility[0].Generators.set(6);
+	Facility[0].Chips.set(6);
+#endif
+
 	uint64_t Steps = Backtrack(Facility, FinalConfig);
 
 	std::cout << "Steps: " << Steps << std::endl;
