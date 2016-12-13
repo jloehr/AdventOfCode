@@ -45,8 +45,8 @@ private:
 	}
 };
 
-uint64_t DoAStar(Map & Maze, const Touple & Start, const Touple & Destination);
-void InsertNode(Map & Maze, const Touple & Destination, Touple Node, uint64_t Steps, std::set<Touple> & ClosedList, std::map<Touple, uint64_t> & StepsPerCorrdinate, std::multimap<float, Touple> & FPerCorrdinate);
+uint64_t Pathfinding(Map & Maze, const Touple & Start, const Touple * Destination);
+void InsertNode(Map & Maze, const Touple * Destination, Touple Node, uint64_t Steps, std::set<Touple> & ClosedList, std::map<Touple, uint64_t> & StepsPerCorrdinate, std::multimap<float, Touple> & FPerCorrdinate);
 
 int main()
 {
@@ -56,17 +56,21 @@ int main()
 
 	Map Maze(Input);
 
-	uint64_t Steps = DoAStar(Maze, Start, Destination);
+	uint64_t Steps = Pathfinding(Maze, Start, &Destination);
+	uint64_t Locations = Pathfinding(Maze, Start, nullptr);
 
 	std::cout << "Steps: " << Steps << std::endl;
+	std::cout << "Locations: " << Locations << std::endl;
 
 	system("pause");
 
     return 0;
 }
 
-uint64_t DoAStar(Map & Maze, const Touple & Start, const Touple & Destination)
+uint64_t Pathfinding(Map & Maze, const Touple & Start, const Touple * Destination)
 {
+	bool FindDesitnation = (Destination != nullptr);
+
 	std::set<Touple> ClosedList;
 	std::map<Touple, uint64_t> StepsPerCorrdinate;
 	std::multimap<float, Touple> FPerCorrdinate;
@@ -76,12 +80,17 @@ uint64_t DoAStar(Map & Maze, const Touple & Start, const Touple & Destination)
 
 	while (!FPerCorrdinate.empty())
 	{
+		float F = FPerCorrdinate.begin()->first;
 		Touple Node = FPerCorrdinate.begin()->second;
 		FPerCorrdinate.erase(FPerCorrdinate.begin());
 
-		if (Node == Destination)
+		if (FindDesitnation && (Node == *Destination))
 		{
 			return StepsPerCorrdinate[Node];
+		}
+		else if (!FindDesitnation && (F > 50.f))
+		{
+			return ClosedList.size();
 		}
 
 		ClosedList.emplace(Node);
@@ -102,7 +111,7 @@ uint64_t DoAStar(Map & Maze, const Touple & Start, const Touple & Destination)
 	return 0;
 }
 
-void InsertNode(Map & Maze, const Touple & Destination, Touple Node, uint64_t Steps, std::set<Touple> & ClosedList, std::map<Touple, uint64_t> & StepsPerCorrdinate, std::multimap<float, Touple> & FPerCorrdinate)
+void InsertNode(Map & Maze, const Touple * Destination, Touple Node, uint64_t Steps, std::set<Touple> & ClosedList, std::map<Touple, uint64_t> & StepsPerCorrdinate, std::multimap<float, Touple> & FPerCorrdinate)
 {
 	if (ClosedList.find(Node) != ClosedList.end())
 		return;
@@ -119,10 +128,15 @@ void InsertNode(Map & Maze, const Touple & Destination, Touple Node, uint64_t St
 		StepsResult.first->second = Steps;
 	}
 
-	float dX = static_cast<float>(Destination.first - Node.first);
-	float dY = static_cast<float>(Destination.second - Node.second);
+	float f = Steps;
 
-	float f = Steps + std::sqrtf(dX * dX + dY * dY);
+	if (Destination != nullptr)
+	{
+		float dX = static_cast<float>(Destination->first - Node.first);
+		float dY = static_cast<float>(Destination->second - Node.second);
+
+		f += std::sqrtf(dX * dX + dY * dY);
+	}
 
 	FPerCorrdinate.emplace(f, Node);
 }
