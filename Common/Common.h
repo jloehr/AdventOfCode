@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 
+#include "MD5.h"
+
 typedef std::vector<std::string> StringVector;
 typedef std::vector<StringVector> StringVectorVector;
 
