@@ -10,9 +10,7 @@ struct Disc
 
 	Disc(size_t Positions, size_t Position)
 		:Positions(Positions), Position(Position)
-	{
-
-	}
+	{}
 };
 
 typedef std::vector<Disc> DiscVector;
@@ -26,8 +24,11 @@ int main()
 
 	DiscVector Discs = CreateDiscStack(Lines);
 
-	std::cout << GetButtonTime(Discs) << std::endl;
+	std::cout << "Part One: " << GetButtonTime(Discs) << std::endl;
 
+	Discs.emplace_back(11, 0);
+
+	std::cout << "Part Two: " << GetButtonTime(Discs) << std::endl;
 
 	system("pause");
 
@@ -52,7 +53,6 @@ DiscVector CreateDiscStack(const StringVectorVector & Lines)
 size_t GetButtonTime(DiscVector Discs)
 {
 	size_t Time = 0;
-	size_t DiscIndex = 0;
 
 	while (true)
 	{
