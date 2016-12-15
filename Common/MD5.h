@@ -10,7 +10,8 @@ public:
 	MD5();
 
 	const Hash & Compute(const ByteVector & Input);
-	std::string AsString();
+	const Hash & GetHash();
+	const std::string & GetHexString();
 
 private:
 	typedef std::array<uint32_t, 16> uint32Array16;
@@ -48,16 +49,16 @@ private:
 	uint32_t C;
 	uint32_t D;
 	uint32Array16 M;
-	uint8Array4 Buffer;
 
 	bool BitAppended;
 	uint64_t BitCount;
 
 	Hash Result;
+	std::string ResultAsString;
 
 	void Reset(size_t InputByteCount);
 	void FillM(ByteVector::const_iterator & It, const ByteVector::const_iterator & End);
-	bool FillBuffer(uint8_t Byte, uint8Array4::iterator & BufferIt, uint32Array16::iterator & MIt);
+	bool FillMByte(uint8_t Byte, uint8_t * & Write, uint8_t * End, size_t & ByteIndex);
 	void ConsumeChunk();
 	void FillResult(uint32_t Value, size_t Offset);
 

@@ -3,68 +3,111 @@
 
 #include "stdafx.h"
 
+struct KeyFindingData
+{
+	std::map<uint8_t, std::set<size_t>> PossibleKeys;
+	size_t ValidKeysCount = 0;
+	size_t KeyIndex = 0;
+};
+
+void ConsumeHash(const MD5::Hash & Hash, const ByteVector & HashInput, KeyFindingData & KeyData);
+MD5::Hash Get2016thHash(std::string Input);
 void AnalyzeHash(const MD5::Hash & Hash, uint8_t & Triplet, std::set<uint8_t> & Fivelets);
 void IncreaseASCIIInteger(ByteVector & String);
 
+static const std::string Input = "cuanljph";
+
 int main()
 {
-	const std::string Input = "cuanljph";
 	ByteVector HashInput(Input.begin(), Input.end());
-	std::map<uint8_t, std::set<size_t>> PossibleKeys;
 	MD5 Hashing;
-	size_t ValidKeys = 0;
-	size_t KeyIndex = 0;
+
+	KeyFindingData PartOne;
+	KeyFindingData PartTwo;
 
 	HashInput.push_back('0');
 
-	while (KeyIndex == 0)
+	while ((PartOne.KeyIndex == 0) || (PartTwo.KeyIndex == 0))
 	{
 		const MD5::Hash & Result = Hashing.Compute(HashInput);
-		std::set<uint8_t> Fivelets;
-		uint8_t Nibble = 0xF0;
 
-		AnalyzeHash(Result, Nibble, Fivelets);
-
-		if (!Fivelets.empty())
+		if (PartOne.KeyIndex == 0)
 		{
-			std::string IndexString(HashInput.begin() + Input.size(), HashInput.end());
-			size_t Index = std::stoi(IndexString);
-
-			for (uint8_t Byte : Fivelets)
-			{
-				std::set<size_t> & KeyIndices = PossibleKeys[Byte];
-				auto FirstValid = KeyIndices.upper_bound((Index < 1000) ? 0 : Index - 1000);
-				
-				while (FirstValid != KeyIndices.end())
-				{
-					ValidKeys++;
-					if (ValidKeys == 64)
-					{
-						KeyIndex = *FirstValid;
-						break;
-					}
-					FirstValid++;
-				}
-
-				KeyIndices.clear();
-			}
+			ConsumeHash(Result, HashInput, PartOne);
 		}
 
-		if (Nibble != 0xF0)
-		{
-			std::string IndexString(HashInput.begin() + Input.size(), HashInput.end());
-			size_t Index = std::stoi(IndexString);
-			PossibleKeys[Nibble].emplace(Index);
-		}
+		MD5::Hash StrechedHash = Get2016thHash(Hashing.GetHexString());
 
+		if (PartTwo.KeyIndex == 0)
+		{
+			ConsumeHash(StrechedHash, HashInput, PartTwo);
+		}
+		
 		IncreaseASCIIInteger(HashInput);
 	}
 
-	std::cout << "64th Key Index: " << KeyIndex << std::endl;
+	std::cout << "Part One - 64th Key Index: " << PartOne.KeyIndex << std::endl;
+	std::cout << "Part Two - 64th Key Index: " << PartTwo.KeyIndex << std::endl;
 
 	system("pause");
 
 	return 0;
+}
+
+void ConsumeHash(const MD5::Hash & Hash, const ByteVector & HashInput, KeyFindingData & KeyData)
+{
+	std::set<uint8_t> Fivelets;
+	uint8_t Nibble = 0xF0;
+
+	AnalyzeHash(Hash, Nibble, Fivelets);
+
+	if (!Fivelets.empty())
+	{
+		std::string IndexString(HashInput.begin() + Input.size(), HashInput.end());
+		size_t Index = std::stoi(IndexString);
+
+		for (uint8_t Byte : Fivelets)
+		{
+			std::set<size_t> & KeyIndices = KeyData.PossibleKeys[Byte];
+			auto FirstValid = KeyIndices.upper_bound((Index < 1000) ? 0 : Index - 1000);
+
+			while (FirstValid != KeyIndices.end())
+			{
+				KeyData.ValidKeysCount++;
+				if (KeyData.ValidKeysCount == 64)
+				{
+					KeyData.KeyIndex = *FirstValid;
+					return;
+				}
+				FirstValid++;
+			}
+
+			KeyIndices.clear();
+		}
+	}
+
+	if (Nibble != 0xF0)
+	{
+		std::string IndexString(HashInput.begin() + Input.size(), HashInput.end());
+		size_t Index = std::stoi(IndexString);
+		KeyData.PossibleKeys[Nibble].emplace(Index);
+	}
+}
+
+MD5::Hash Get2016thHash(std::string Input)
+{
+	MD5 Hasher;
+
+	ByteVector InputData(Input.begin(), Input.end());
+
+	for (size_t i = 0; i < 2016; i++)
+	{
+		Hasher.Compute(InputData);
+		const std::string & Buffer = Hasher.GetHexString();
+		InputData.assign(Buffer.begin(), Buffer.end());
+	}
+
+	return Hasher.GetHash();
 }
 
 void AnalyzeHash(const MD5::Hash & Hash, uint8_t & Triplet, std::set<uint8_t> & Fivelets)

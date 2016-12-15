@@ -24,16 +24,30 @@ const MD5::Hash & MD5::Compute(const ByteVector & Input)
 	return Result;
 }
 
-std::string MD5::AsString()
+const MD5::Hash & MD5::GetHash()
 {
-	std::stringstream StringStream;
+	return Result;
+}
 
-	for (uint8_t Value : Result)
+const std::string & MD5::GetHexString()
+{
+	constexpr const char HexCharacters[] = "0123456789abcdef";
+
+	if (ResultAsString.empty())
 	{
-		StringStream << std::hex << std::setfill('0') << std::setw(2) << static_cast<uint16_t>(Value);
+		ResultAsString.reserve(32);
+
+		for (uint8_t Byte : Result)
+		{
+			uint8_t HighNibble = Byte >> 4;
+			uint8_t LowNibble = 0x0F & Byte;
+
+			ResultAsString += HexCharacters[HighNibble];
+			ResultAsString += HexCharacters[LowNibble];
+		}
 	}
 
-	return StringStream.str();
+	return ResultAsString;
 }
 
 void MD5::Reset(size_t InputByteCount)
@@ -47,17 +61,19 @@ void MD5::Reset(size_t InputByteCount)
 	BitCount = InputByteCount * 8;
 
 	Result.fill(0);
+	ResultAsString.clear();
 }
 
 void MD5::FillM(ByteVector::const_iterator & It, const ByteVector::const_iterator & End)
 {
-	auto BufferIt = Buffer.begin();
-	auto MIt = M.begin();
+	uint8_t * Write = reinterpret_cast<uint8_t *>(M.data());
+	uint8_t * WriteEnd = (Write + M.size() * 4);
+	size_t ByteIndex = 0;
 
 	// Fill M with Chunk Data
 	while (It != End)
 	{
-		if (FillBuffer(*It++, BufferIt, MIt))
+		if (FillMByte(*It++, Write, WriteEnd, ByteIndex))
 		{
 			return;
 		}
@@ -67,20 +83,22 @@ void MD5::FillM(ByteVector::const_iterator & It, const ByteVector::const_iterato
 	if (!BitAppended)
 	{
 		BitAppended = true;
-		if (FillBuffer(0x80, BufferIt, MIt))
+		if (FillMByte(0x80, Write, WriteEnd, ByteIndex))
 		{
 			return;
 		}
 
 		// Fill last 32 Bit
-		while (BufferIt != Buffer.begin())
+		while ((ByteIndex % 4) != 0)
 		{
-			if (FillBuffer(0x00, BufferIt, MIt))
+			if (FillMByte(0x00, Write, WriteEnd, ByteIndex))
 			{
 				return;
 			}
 		}
 	}
+
+	auto MIt = M.begin() + (ByteIndex / 4);
 
 	// Pad with Zeros
 	while (MIt != M.end() && (MIt != M.end() - 2))
@@ -96,21 +114,12 @@ void MD5::FillM(ByteVector::const_iterator & It, const ByteVector::const_iterato
 	}
 }
 
-bool MD5::FillBuffer(uint8_t Byte, uint8Array4::iterator & BufferIt, uint32Array16::iterator & MIt)
+bool MD5::FillMByte(uint8_t Byte, uint8_t * & Write, uint8_t * End, size_t & ByteIndex)
 {
-	(*BufferIt++) = Byte;
+	*(Write++) = Byte; 
+	ByteIndex++;
 
-	if (BufferIt == Buffer.end())
-	{
-		BufferIt = Buffer.begin();
-		(*MIt++) = *reinterpret_cast<uint32_t *>(Buffer.data());
-		if (MIt == M.end())
-		{
-			return true;
-		}
-	}
-
-	return false;
+	return (Write == End);
 }
 
 void MD5::ConsumeChunk()
@@ -165,9 +174,8 @@ void MD5::FillResult(uint32_t Value, size_t Offset)
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		Result[Offset + i] = *(Byte + i);
+		Result[Offset + i] = Byte[i];
 	}
-
 }
 
 uint32_t MD5::LeftRotate(uint32_t Value, size_t Shift)
