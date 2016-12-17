@@ -8,14 +8,15 @@ typedef std::pair<Coordinate, std::string> Position;
 
 constexpr size_t GridSize = 4;
 
-std::string GetPath(const Coordinate & Start, const Coordinate & Destination, const std::string & Prefix);
+std::string GetPath(const Coordinate & Start, const Coordinate & Destination, const std::string & Prefix, bool Longest);
 void GetDoorStatus(const std::string & Hash, bool & Up, bool & Down, bool & Left, bool & Right);
 
 int main()
 {
 	const std::string Input = "rrrbmfta";
 
-	std::cout << "Path: " << GetPath(Coordinate(0, 0), Coordinate(3, 3), Input) << std::endl;
+	std::cout << "Part One: " << GetPath(Coordinate(0, 0), Coordinate(3, 3), Input, false) << std::endl;
+	std::cout << "Part Two: " << GetPath(Coordinate(0, 0), Coordinate(3, 3), Input, true).size() << std::endl;
 
 	system("pause");
 
@@ -40,9 +41,11 @@ void AddToList(std::multimap<size_t, Position> & OpenList, const Coordinate & Po
 	OpenList.insert({ GetHeuristic(Position, Destination, Path), { Position, Path } });
 }
 
-std::string GetPath(const Coordinate & Start, const Coordinate & Destination, const std::string & Prefix)
+std::string GetPath(const Coordinate & Start, const Coordinate & Destination, const std::string & Prefix, bool Longest)
 {
 	std::multimap<size_t, Position> OpenList = { { GetDistance(Start, Destination), { Start, "" } } };
+
+	std::string LongPath;
 
 	while (!OpenList.empty())
 	{
@@ -51,7 +54,18 @@ std::string GetPath(const Coordinate & Start, const Coordinate & Destination, co
 
 		if (Node.first == Destination)
 		{
-			return Node.second;
+			if (!Longest)
+			{
+				return Node.second;
+			}
+			else
+			{
+				if (LongPath.size() < Node.second.size())
+				{
+					LongPath = Node.second;
+				}
+				continue;
+			}
 		}
 
 		bool Up, Down, Left, Right;
@@ -78,7 +92,7 @@ std::string GetPath(const Coordinate & Start, const Coordinate & Destination, co
 		}
 	}
 
-	return std::string();
+	return LongPath;
 }
 
 void GetDoorStatus(const std::string & Hash, bool & Up, bool & Down, bool & Left, bool & Right)
