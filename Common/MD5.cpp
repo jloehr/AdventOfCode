@@ -14,7 +14,7 @@ const MD5::Hash & MD5::Compute(const ByteVector & Input)
 	do {
 		FillM(InputIt, Input.end());
 		ConsumeChunk();
-	} while (InputIt != Input.end());
+	} while (!SizeAppended);
 
 	FillResult(A, 0);
 	FillResult(B, 4);
@@ -57,8 +57,9 @@ void MD5::Reset(size_t InputByteCount)
 	C = MagicC;
 	D = MagicD;
 
-	BitAppended = false;
 	BitCount = InputByteCount * 8;
+	BitAppended = false;
+	SizeAppended = false;
 
 	Result.fill(0);
 	ResultAsString.clear();
@@ -111,6 +112,7 @@ void MD5::FillM(ByteVector::const_iterator & It, const ByteVector::const_iterato
 	{
 		(*MIt++) = static_cast<uint32_t>(BitCount);
 		(*MIt++) = static_cast<uint32_t>(BitCount >> 32);
+		SizeAppended = true;
 	}
 }
 

@@ -50,8 +50,9 @@ private:
 	uint32_t D;
 	uint32Array16 M;
 
-	bool BitAppended;
 	uint64_t BitCount;
+	bool BitAppended;
+	bool SizeAppended;
 
 	Hash Result;
 	std::string ResultAsString;
