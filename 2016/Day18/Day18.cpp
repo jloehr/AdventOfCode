@@ -3,21 +3,19 @@
 
 #include "stdafx.h"
 
-constexpr size_t Rows = 40;
+constexpr size_t PartOne = 40;
+constexpr size_t PartTwo = 400000;
 
 typedef std::vector<bool> Row;
-typedef std::array <Row, Rows> Board;
 
-Board PopulateBoard(const std::string & Input, size_t & SafeTiles);
+size_t ComputeRow(const std::string & Input, size_t RowCount);
 
 int main()
 {
 	std::string Line = GetFileLines("Input.txt")[0];
 
-	size_t SafeTiles;
-	Board Floor = PopulateBoard(Line, SafeTiles);
-
-	std::cout << "Safe Tiles: " << SafeTiles << std::endl;
+	std::cout << PartOne << ": " << ComputeRow(Line, PartOne) << std::endl;
+	std::cout << PartOne << ": " << ComputeRow(Line, PartTwo) << std::endl;
 
 	system("pause");
 
@@ -64,17 +62,16 @@ Row ComputeRow(const Row & PreviousRow, size_t & SafeTiles)
 	return NewRow;
 }
 
-Board PopulateBoard(const std::string & Input, size_t & SafeTiles)
+size_t ComputeRow(const std::string & Input, size_t RowCount)
 {
-	SafeTiles = 0;
-	Board Floor;
+	size_t SafeTiles = 0;
+	Row CurrentRow = FillRow(Input, SafeTiles);
 
-	Floor[0] = FillRow(Input, SafeTiles);
-
-	for (size_t i = 1; i < Rows; i++)
+	for (size_t i = 1; i < RowCount; i++)
 	{
-		Floor[i] = ComputeRow(Floor[i - 1], SafeTiles);
+		Row NextRow = ComputeRow(CurrentRow, SafeTiles);
+		std::swap(CurrentRow, NextRow);
 	}
 
-	return Floor;
+	return SafeTiles;
 }
