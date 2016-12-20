@@ -17,6 +17,14 @@ int main()
 
 	std::cout << "First valid: " << (MergedRanges.begin()->second + 1) << std::endl;
 
+	size_t TotalValid = MergedRanges.size();
+	if (MergedRanges.rbegin()->second == UINT32_MAX)
+	{
+		TotalValid--;
+	}
+
+	std::cout << "Total valid: " << TotalValid << std::endl;
+
 	system("pause");
 
     return 0;
