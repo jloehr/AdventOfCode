@@ -11,6 +11,9 @@
 #include <tchar.h>
 
 #include <regex>
+#include <iomanip>
+#include <set>
+#include <map>
 
 #include "../../Common/Common.h"
 
