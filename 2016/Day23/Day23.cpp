@@ -92,6 +92,8 @@ struct Instruction
 			break;
 		case OpCode::Toggle:
 			{
+				State.Print();
+				std::cout << std::endl;
 				size_t Instruction = State.IP + (RefFetch ? RefFetch(State) : Arg1(State));
 				if (Instruction < Instructions.size())
 				{
@@ -182,16 +184,20 @@ static const std::map<std::string, FetchFunction> RegisterFetchMap = {
 
 
 InstructionVector ParseAssembly(const StringVectorVector & Lines);
-Registers Run(InstructionVector & Instructions, Registers InitialState = Registers());
+Registers Run(InstructionVector Instructions, Registers InitialState = Registers());
 
 int main()
 {
 	StringVectorVector Lines = GetFileLineParts("Input.txt");
 	InstructionVector Instructions = ParseAssembly(Lines);
 
+	// A = 7! + 81 * 73
 	Registers PartOne = Run(Instructions, { 7, 0, 0, 0, 0 });
+	std::cout << "Part One: " << PartOne.A << std::endl;
 
-	std::cout << "A: " << PartOne.A << std::endl;
+	// A = 12! + 81 * 73
+	Registers PartTwo = Run(Instructions, { 12, 0, 0, 0, 0 });
+	std::cout << "Part Two: " << PartTwo.A << std::endl;
 
 	system("pause");
 
@@ -229,7 +235,7 @@ void PrintDebug(const Registers & State, const Instruction & Instruction)
 	getchar();
 }
 
-Registers Run(InstructionVector & Instructions, Registers InitialState)
+Registers Run(InstructionVector Instructions, Registers InitialState)
 {
 	Registers & State = InitialState;
 
@@ -318,3 +324,36 @@ Instruction ParseTgl(const StringVector & Line)
 		return Instruction(OpCode::Toggle, GetFetchValueFunction(Line[1]));
 	}
 }
+
+
+
+/*
+
+cpy a b
+dec b
+cpy a d
+cpy 0 a
+cpy b c
+inc a
+dec c
+jnz c -2
+dec d
+jnz d -5
+dec b
+cpy b c
+cpy c d
+dec d
+inc c
+jnz d -2
+tgl c
+cpy -16 c
+jnz 1 c
+cpy 81 c
+jnz 73 d
+inc a
+inc d
+jnz d -2
+inc c
+jnz c -5
+
+*/
