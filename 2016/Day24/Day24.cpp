@@ -18,7 +18,7 @@ struct Node
 
 NodeVector GetNodes(const std::string & InputFile); 
 void FloodFill(Vector2D Start, NodePtr StartNode, NodeVector & Nodes, const StringVector & Map);
-uint64_t GetShortestRoute(const NodeVector & Nodes);
+uint64_t GetShortestRoute(const NodeVector & Nodes, NodePtr EndNode);
 
 int main()
 {
@@ -37,7 +37,8 @@ int main()
 	}
 	*/
 
-	std::cout << "Steps: " << GetShortestRoute(Nodes) << std::endl;
+	std::cout << "Part One: " << GetShortestRoute(Nodes, nullptr) << std::endl;
+	std::cout << "Part Two: " << GetShortestRoute(Nodes, Nodes[0]) << std::endl;
 
 	system("pause");
 
@@ -189,7 +190,7 @@ void FloodFill(Vector2D Start, NodePtr StartNode, NodeVector & Nodes, const Stri
 	} while (!NewPositions.empty());
 }
 
-uint64_t GetShortestRouteRec(const NodePtr Node, std::vector<NodePtr> VisitedNodes,const uint64_t RouteDistance, uint64_t ShortestRouteSoFar, const size_t NodeCount)
+uint64_t GetShortestRouteRec(const NodePtr Node, std::vector<NodePtr> VisitedNodes,const uint64_t RouteDistance, uint64_t ShortestRouteSoFar, const size_t NodeCount, NodePtr EndNode)
 {
 	if (RouteDistance > ShortestRouteSoFar)
 		return ShortestRouteSoFar;
@@ -206,7 +207,18 @@ uint64_t GetShortestRouteRec(const NodePtr Node, std::vector<NodePtr> VisitedNod
 		std::cout << std::endl;
 		*/
 
-		return RouteDistance;
+		if (!EndNode)
+		{
+			return RouteDistance;
+		}
+		else
+		{
+			auto Result = std::find_if(Node->Neighbors.begin(), Node->Neighbors.end(), [EndNode](const NodeDistance & Other)->bool { return Other.first == EndNode; });
+			if (Result != Node->Neighbors.end())
+				return RouteDistance + Result->second;
+			else
+				return ShortestRouteSoFar;
+		}
 	}
 
 	for (const NodeDistance & OtherNode : Node->Neighbors)
@@ -214,17 +226,17 @@ uint64_t GetShortestRouteRec(const NodePtr Node, std::vector<NodePtr> VisitedNod
 		if (std::find(VisitedNodes.begin(), VisitedNodes.end(), OtherNode.first) != VisitedNodes.end())
 			continue;
 
-		ShortestRouteSoFar = std::min(ShortestRouteSoFar, GetShortestRouteRec(OtherNode.first, VisitedNodes, RouteDistance + OtherNode.second, ShortestRouteSoFar, NodeCount));
+		ShortestRouteSoFar = std::min(ShortestRouteSoFar, GetShortestRouteRec(OtherNode.first, VisitedNodes, RouteDistance + OtherNode.second, ShortestRouteSoFar, NodeCount, EndNode));
 	}
 
 	return ShortestRouteSoFar;
 }
 
-uint64_t GetShortestRoute(const NodeVector & Nodes)
+uint64_t GetShortestRoute(const NodeVector & Nodes, NodePtr EndNode)
 {
 	uint64_t ShortestRouteDistance = UINT64_MAX;
 
-	ShortestRouteDistance = GetShortestRouteRec(Nodes[0], {}, 0, ShortestRouteDistance, Nodes.size());
+	ShortestRouteDistance = GetShortestRouteRec(Nodes[0], {}, 0, ShortestRouteDistance, Nodes.size(), EndNode);
 
 	return ShortestRouteDistance;
 }
