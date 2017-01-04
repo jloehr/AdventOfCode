@@ -134,43 +134,52 @@ void MD5::ConsumeChunk()
 	uint32_t TempC = C;
 	uint32_t TempD = D;
 
-	for (size_t i = 0; i < 64; i++)
+	size_t i = 0;
+
+	for (; i < 16; ++i)
 	{
-		uint32_t F;
-		size_t g;
+		uint32_t F = (TempB & TempC) | ((~TempB) & TempD);
+		RotateValues(TempA, TempB, TempC, TempD, F, i, i);
+	}
 
-		switch (i / 16)
-		{
-		case 0:
-			F = (TempB & TempC) | ((~TempB) & TempD);
-			g = i;
-			break;
-		case 1:
-			F = (TempD & TempB) | ((~TempD) & TempC);
-			g = (5 * i + 1) % 16;
-			break;
-		case 2:
-			F = TempB ^ TempC ^TempD;
-			g = (3 * i + 5) % 16;
-			break;
-		case 3:
-			F = TempC ^ (TempB | (~TempD));
-			g = (7 * i) % 16;
-			break;
-		}
+	for (; i < 32; ++i)
+	{
+		uint32_t F = (TempD & TempB) | ((~TempD) & TempC);
+		uint32_t g = (5 * i + 1) % 16;
 
-		uint32_t NewValue = LeftRotate(TempA + F + K[i] + M[g], BitShift[i]);
+		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
+	}
 
-		TempA = TempD;
-		TempD = TempC;
-		TempC = TempB;
-		TempB += NewValue;
+	for (; i < 48; ++i)
+	{
+		uint32_t F = TempB ^ TempC ^TempD;
+		uint32_t g = (3 * i + 5) % 16;
+
+		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
+	}
+
+	for (; i < 64; ++i)
+	{
+		uint32_t F = TempC ^ (TempB | (~TempD));
+		uint32_t g = (7 * i) % 16;
+
+		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
 	}
 
 	A += TempA;
 	B += TempB;
 	C += TempC;
 	D += TempD;
+}
+
+void MD5::RotateValues(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD, uint32_t F, uint32_t g, size_t i)
+{
+	uint32_t NewValue = _rotl(TempA + F + K[i] + M[g], BitShift[i]);
+
+	TempA = TempD;
+	TempD = TempC;
+	TempC = TempB;
+	TempB += NewValue;
 }
 
 void MD5::FillResult(uint32_t Value, size_t Offset)
@@ -181,9 +190,4 @@ void MD5::FillResult(uint32_t Value, size_t Offset)
 	{
 		Result[Offset + i] = Byte[i];
 	}
-}
-
-uint32_t MD5::LeftRotate(uint32_t Value, size_t Shift)
-{
-	return (Value << Shift) | (Value >> (32 - Shift));
 }

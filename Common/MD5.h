@@ -59,12 +59,13 @@ private:
 	std::string ResultAsString;
 
 	void Reset(size_t InputByteCount);
+
 	void FillM(ByteVector::const_iterator & It, const ByteVector::const_iterator & End);
 	bool FillMByte(uint8_t Byte, uint8_t * & Write, uint8_t * End, size_t & ByteIndex);
-	void ConsumeChunk();
-	void FillResult(uint32_t Value, size_t Offset);
 
-	uint32_t LeftRotate(uint32_t Value, size_t Shift);
-	
+	void ConsumeChunk();
+	void RotateValues(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD, uint32_t F, uint32_t g, size_t i);
+
+	void FillResult(uint32_t Value, size_t Offset);	
 };
 

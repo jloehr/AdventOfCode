@@ -20,4 +20,6 @@
 #include <map>
 #include <vector>
 
+#include <intrin.h>
+
 // TODO: reference additional headers your program requires here
