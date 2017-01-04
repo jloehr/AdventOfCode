@@ -55,6 +55,7 @@ private:
 	bool SizeAppended;
 
 	Hash Result;
+	bool StringResultValid;
 	std::string ResultAsString;
 
 	void Reset(size_t InputByteCount);

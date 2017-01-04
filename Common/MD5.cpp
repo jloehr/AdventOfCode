@@ -2,7 +2,9 @@
 #include "MD5.h"
 
 MD5::MD5()
+	:ResultAsString(32, '0'), StringResultValid(true)
 {
+	Result.fill(0);
 }
 
 const MD5::Hash & MD5::Compute(const ByteVector & Input)
@@ -33,18 +35,20 @@ const std::string & MD5::GetHexString()
 {
 	constexpr const char HexCharacters[] = "0123456789abcdef";
 
-	if (ResultAsString.empty())
+	if (!StringResultValid)
 	{
-		ResultAsString.reserve(32);
+		auto StringIt = ResultAsString.begin();
 
 		for (uint8_t Byte : Result)
 		{
 			uint8_t HighNibble = Byte >> 4;
 			uint8_t LowNibble = 0x0F & Byte;
 
-			ResultAsString += HexCharacters[HighNibble];
-			ResultAsString += HexCharacters[LowNibble];
+			(*StringIt++) = HexCharacters[HighNibble];
+			(*StringIt++) = HexCharacters[LowNibble];
 		}
+
+		StringResultValid = true;
 	}
 
 	return ResultAsString;
@@ -61,8 +65,7 @@ void MD5::Reset(size_t InputByteCount)
 	BitAppended = false;
 	SizeAppended = false;
 
-	Result.fill(0);
-	ResultAsString.clear();
+	StringResultValid = false;
 }
 
 void MD5::FillM(ByteVector::const_iterator & It, const ByteVector::const_iterator & End)
