@@ -67,5 +67,68 @@ private:
 	void RotateValues(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD, uint32_t F, uint32_t g, size_t i);
 
 	void FillResult(uint32_t Value, size_t Offset);	
+
+	template<size_t i>
+	void RoundOne(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		uint32_t F = (TempB & TempC) | ((~TempB) & TempD);
+		TempA = TempB + _rotl(TempA + F + K[i] + M[i], BitShift[i]);
+
+		RoundOne<i + 1>(TempD, TempA, TempB, TempC);
+	}
+
+	template<>
+	void RoundOne<16>(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		return;
+	}
+
+	template<size_t i>
+	void RoundTwo(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		constexpr size_t g = (5 * i + 1) % 16;
+		uint32_t F = (TempD & TempB) | ((~TempD) & TempC);
+		TempA = TempB + _rotl(TempA + F + K[i] + M[g], BitShift[i]);
+
+		RoundTwo<i + 1>(TempD, TempA, TempB, TempC);
+	}
+
+	template<>
+	void RoundTwo<32>(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		return;
+	}
+
+	template<size_t i>
+	void RoundThree(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		constexpr size_t g = (3 * i + 5) % 16;
+		uint32_t F = TempB ^ TempC ^ TempD;
+		TempA = TempB + _rotl(TempA + F + K[i] + M[g], BitShift[i]);
+
+		RoundThree<i + 1>(TempD, TempA, TempB, TempC);
+	}
+
+	template<>
+	void RoundThree<48>(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		return;
+	}
+
+	template<size_t i>
+	void RoundFour(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		constexpr size_t g = (7 * i) % 16;
+		uint32_t F = TempC ^ (TempB | (~TempD));
+		TempA = TempB + _rotl(TempA + F + K[i] + M[g], BitShift[i]);
+
+		RoundFour<i + 1>(TempD, TempA, TempB, TempC);
+	}
+
+	template<>
+	void RoundFour<64>(uint32_t & TempA, uint32_t & TempB, uint32_t & TempC, uint32_t & TempD)
+	{
+		return;
+	}
 };
 

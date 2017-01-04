@@ -134,37 +134,10 @@ void MD5::ConsumeChunk()
 	uint32_t TempC = C;
 	uint32_t TempD = D;
 
-	size_t i = 0;
-
-	for (; i < 16; ++i)
-	{
-		uint32_t F = (TempB & TempC) | ((~TempB) & TempD);
-		RotateValues(TempA, TempB, TempC, TempD, F, i, i);
-	}
-
-	for (; i < 32; ++i)
-	{
-		uint32_t F = (TempD & TempB) | ((~TempD) & TempC);
-		uint32_t g = (5 * i + 1) % 16;
-
-		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
-	}
-
-	for (; i < 48; ++i)
-	{
-		uint32_t F = TempB ^ TempC ^TempD;
-		uint32_t g = (3 * i + 5) % 16;
-
-		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
-	}
-
-	for (; i < 64; ++i)
-	{
-		uint32_t F = TempC ^ (TempB | (~TempD));
-		uint32_t g = (7 * i) % 16;
-
-		RotateValues(TempA, TempB, TempC, TempD, F, g, i);
-	}
+	RoundOne<0>(TempA, TempB, TempC, TempD);
+	RoundTwo<16>(TempA, TempB, TempC, TempD);
+	RoundThree<32>(TempA, TempB, TempC, TempD);
+	RoundFour<48>(TempA, TempB, TempC, TempD);
 
 	A += TempA;
 	B += TempB;
