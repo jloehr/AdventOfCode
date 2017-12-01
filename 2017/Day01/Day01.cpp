@@ -7,21 +7,23 @@ int main()
 {
 	StringVector File = GetFileLines("Input.txt");
 	const std::string & Line = File[0];
-	uint64_t Sum = 0;
+	uint64_t SumPartOne = 0;
+	uint64_t SumPartTwo = 0;
 
 	char LastDigit = *Line.crbegin();
+	auto OppositeDigitIt = Line.begin() + Line.size() / 2;
 	for (auto DigitIt = Line.begin(); DigitIt != Line.end(); ++DigitIt)
 	{
 		const char Digit = *DigitIt;
-		if (Digit == LastDigit)
-		{
-			Sum += Digit - '0';
-		}
+		SumPartOne += (Digit == LastDigit) ? Digit - '0' : 0;
+		SumPartTwo += (Digit == *OppositeDigitIt) ? Digit - '0' : 0;
 
 		LastDigit = Digit;
+		OppositeDigitIt = (++OppositeDigitIt == Line.end()) ? Line.begin() : OppositeDigitIt;
 	}
 
-	std::cout << "Captcha: " << Sum << std::endl;
+	std::cout << "Captcha part one: " << SumPartOne << std::endl;
+	std::cout << "Captcha part two: " << SumPartTwo << std::endl;
 
 	system("pause");
 
