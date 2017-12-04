@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <set>
 #include <unordered_set>
 
 #include "../../Common/Common.h"
