@@ -6,10 +6,10 @@
 int main()
 {
 	auto Memory = GetValues<unsigned int>("Input.txt");
-	std::set<std::vector<unsigned int>> Configurations = { Memory };
+	std::map<std::vector<unsigned int>, size_t> Configurations = { { Memory, 0 } };
 	size_t Steps = 0;
-
-	for (; Steps == (Configurations.size() - 1); ++Steps)
+	
+	while(Steps == (Configurations.size() - 1))
 	{
 		auto Bank = std::max_element(Memory.begin(), Memory.end());
 		unsigned int Blocks = *Bank;
@@ -23,10 +23,12 @@ int main()
 			++(*Bank);
 		}
 
-		Configurations.insert(Memory);
+		++Steps;
+		Configurations.insert({ Memory, Steps});
 	}
 
 	std::cout << "Steps: " << Steps << std::endl;
+	std::cout << "Cycle: " << (Steps - Configurations[Memory]) << std::endl;
 
 	system("pause");
     return 0;
