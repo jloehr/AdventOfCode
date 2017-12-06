@@ -27,19 +27,5 @@ StringVector GetFileLines(const std::string & InputFileName)
 
 StringVectorVector GetFileLineParts(const std::string & InputFileName)
 {
-	StringVector FileLines = GetFileLines(InputFileName);
-
-	StringVectorVector FileLineParts(FileLines.size());
-	StringVectorVector::iterator FileLinePartsIterator = FileLineParts.begin();
-
-	for (const std::string & Line : FileLines)
-	{
-		std::stringstream LineStream(Line);
-
-		std::copy(std::istream_iterator<std::string>(LineStream),
-			std::istream_iterator<std::string>(),
-			std::back_inserter(*(FileLinePartsIterator++)));
-	}
-
-	return FileLineParts;
+	return GetLineValues<std::string>(InputFileName);
 }
