@@ -19,8 +19,10 @@ const static std::map<std::string, std::function<bool(const int64_t, const int64
 
 int main()
 {
+	const auto ValueCompare = [](const auto & Left, const auto & Right) { return Left.second < Right.second; };
 	const StringVector Lines = GetFileLines("Input.txt");
 	std::map<std::string, int64_t> Registers;
+	int64_t MaxValue = INT64_MIN;
 
 	for (const auto & Line : Lines)
 	{
@@ -41,10 +43,13 @@ int main()
 		{
 			Instructions.find(OpCode)->second(Registers[Register], Value);
 		}
+
+		MaxValue = std::max(MaxValue, std::max_element(Registers.begin(), Registers.end(), ValueCompare)->second);
 	}
 	
-	auto MaxElement = std::max_element(Registers.begin(), Registers.end(), [](const auto & Left, const auto & Right) { return Left.second < Right.second; });
+	auto MaxElement = std::max_element(Registers.begin(), Registers.end(), ValueCompare);
 	std::cout << "Max Register " << MaxElement->first << ": " << MaxElement->second << std::endl;
+	std::cout << "Max Value: " << MaxValue << std::endl;
 
 	system("pause");
     return 0;
