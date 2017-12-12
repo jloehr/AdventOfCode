@@ -73,7 +73,6 @@ std::string PartTwo()
 
 int main()
 {
-
 	std::cout << "Part One: " << PartOne() << std::endl;
 	std::cout << "Part Two: " << PartTwo() << std::endl;
 
