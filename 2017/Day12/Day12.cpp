@@ -7,26 +7,40 @@
 int main()
 {
 	const StringVectorVector Lines = GetFileLineParts("Input.txt");
-	std::set<unsigned long> GroupZero;
-	std::queue<unsigned long> Queue;
-	Queue.push(0);
+	std::vector<size_t> GroupAffiliation(Lines.size(), SIZE_MAX);
+	std::map<size_t, size_t> Groups;
 
-	while (!Queue.empty())
+	for (size_t i = 0; i < GroupAffiliation.size(); ++i)
 	{
-		auto Result = GroupZero.insert(Queue.front());
-		if (Result.second)
+		if (GroupAffiliation[i] == SIZE_MAX)
 		{
-			const auto & Line = Lines[Queue.front()];
-			for (auto It = std::begin(Line) + 2; It != std::end(Line); std::advance(It, 1))
-			{
-				Queue.push(std::stoul(*It));
-			}
-		}
+			std::set<size_t> Group;
+			std::queue<size_t> Queue;
+			Queue.push(i);
 
-		Queue.pop();
+			while (!Queue.empty())
+			{
+				auto Result = Group.insert(Queue.front());
+				if (Result.second)
+				{
+					const auto & Line = Lines[Queue.front()];
+					for (auto It = std::begin(Line) + 2; It != std::end(Line); std::advance(It, 1))
+					{
+						Queue.push(static_cast<size_t>(std::stoull(*It)));
+					}
+
+					GroupAffiliation[Queue.front()] = i;
+				}
+
+				Queue.pop();
+			}
+
+			Groups[i] = Group.size();
+		}
 	}
 
-	std::cout << "Group 0: " << GroupZero.size() << std::endl;
+	std::cout << Groups.size() << " Groups" << std::endl;
+	std::cout << "Group 0: " << Groups[0] << std::endl;
 
 	system("pause");
     return 0;
