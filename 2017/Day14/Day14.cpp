@@ -39,6 +39,8 @@ int main()
 {
 	const std::string Input = "ugkiagan";
 	size_t SquaresUsed = 0;
+	size_t Regions = 0;
+	std::array<std::bitset<128>, 128> Disk;
 
 	for (size_t i = 0; i < 128; ++i)
 	{
@@ -46,12 +48,47 @@ int main()
 		RowStream << Input << '-' << i;
 		auto Row = RowStream.str();
 		auto Hash = KnotHash(std::vector<uint8_t>(std::begin(Row), std::end(Row)));
-		SquaresUsed += std::bitset<64>(reinterpret_cast <uint64_t*>(Hash.data())[0]).count();
-		SquaresUsed += std::bitset<64>(reinterpret_cast <uint64_t*>(Hash.data())[1]).count();
+
+		for (auto Byte : Hash)
+		{
+			Disk[i] <<= 8;
+			Disk[i] |= std::bitset<128>(Byte);
+		}
+
+		SquaresUsed += Disk[i].count();
 	}
 
-	std::cout << "Squares Used: " << SquaresUsed << std::endl;
+	for(size_t i = 0; i < 128; i++)
+		for (size_t j = 0; j < 128; j++)
+			if(Disk[i][j])
+			{
+				++Regions;
+				std::queue<std::pair<size_t, size_t>> WorkQueue;
+				WorkQueue.push(std::make_pair(i, j));
 
+				while (!WorkQueue.empty())
+				{
+					auto Position = WorkQueue.front();
+					WorkQueue.pop();
+
+					if (Disk[Position.first][Position.second])
+					{
+						Disk[Position.first][Position.second] = false;
+						if (Position.first > 0)
+							WorkQueue.push(std::make_pair(Position.first - 1, Position.second));
+						if (Position.second > 0)
+							WorkQueue.push(std::make_pair(Position.first, Position.second - 1));
+						if (Position.first < 127)
+							WorkQueue.push(std::make_pair(Position.first + 1, Position.second));
+						if (Position.second < 127)
+							WorkQueue.push(std::make_pair(Position.first, Position.second + 1));
+					}
+				}
+			}
+
+
+	std::cout << "Squares Used: " << SquaresUsed << std::endl;
+	std::cout << "Regions: " << Regions << std::endl;
 	system("pause");
     return 0;
 }
