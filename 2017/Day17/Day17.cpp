@@ -17,7 +17,20 @@ int main()
 		List.emplace(It, i);
 	}
 
-	std::cout << *(std::begin(List) + ((Position + 1) % List.size())) << std::endl;
+	std::cout << "Part one: " << *(std::begin(List) + ((Position + 1) % List.size())) << std::endl;
+
+	Position = 1;
+	size_t Value = 1;
+
+	for (auto i = 2; i <= 50000000; ++i)
+	{
+		Position = ((Position + Input) % i) + 1;
+		if (Position == 1)
+			Value = i;
+	}
+
+	std::cout << "Part two: " << Value << std::endl;
+
 	system("pause");
     return 0;
 }
