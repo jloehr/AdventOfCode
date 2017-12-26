@@ -8,106 +8,164 @@ constexpr size_t RegisterCount = 'z' - 'a';
 struct State;
 
 using RegisterType = int64_t;
-using Instruction = std::function<size_t(State &)>;
+using Instruction = std::function<bool(State &)>;
 using Registers = std::array<RegisterType, RegisterCount>;
+using Queue = std::queue<RegisterType>;
 
 struct State
 {
+	size_t InstructionPointer;
 	Registers Registers;
-	int Frequency;
-	bool RecoveryFlag;
+	bool ReceiveFlag;
+	RegisterType LastSendValue;
+	size_t SendCounter;
+	Queue SendBuffer;
+	Queue * ReceiveBuffer;
 };
 
-
-RegisterType & FetchRegister(const std::string & Name, Registers & Regs);
-std::function<const RegisterType()> FetchSecondArg(const std::string & String, Registers & Regs);
-
-const std::unordered_map<std::string, std::function<Instruction(const StringVector &, Registers &)>> CompilerMap{
-	{"set", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			auto Arg2 = FetchSecondArg(Line[2], Regs);
-			return [Arg2, &Arg1](State &)->size_t { Arg1 = Arg2(); return 1; };
-		}
-	},
-	{"add", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			auto Arg2 = FetchSecondArg(Line[2], Regs);
-			return [Arg2, &Arg1](State &)->size_t { Arg1 += Arg2(); return 1; };
-		}
-	},
-	{ "mul", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			auto Arg2 = FetchSecondArg(Line[2], Regs);
-			return [Arg2, &Arg1](State &)->size_t { Arg1 *= Arg2(); return 1; };
-		}
-	},
-	{ "mod", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			auto Arg2 = FetchSecondArg(Line[2], Regs);
-			return [Arg2, &Arg1](State &)->size_t { Arg1 %= Arg2(); return 1; };
-		}
-	},
-	{ "snd", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			return [&Arg1](State & State)->size_t { State.Frequency = Arg1; return 1; };
-		}
-	},
-	{ "rcv", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			RegisterType & Arg1 = FetchRegister(Line[1], Regs);
-			return [&Arg1](State & State)->size_t {
-				if (Arg1 != 0)
-				{
-					Arg1 = State.Frequency;
-					State.RecoveryFlag = true;
-				}
-				return 1; 
-			};
-		}
-	},
-	{ "jgz", [](const StringVector & Line, Registers & Regs)->Instruction
-		{
-			auto Arg1 = FetchSecondArg(Line[1], Regs);
-			auto Arg2 = FetchSecondArg(Line[2], Regs);
-			return [Arg1, Arg2](State &)->size_t {
-				if (Arg1() > 0)
-					return Arg2();
-				return 1;
-			};
-		}
-	},
-};
-
-RegisterType & FetchRegister(const std::string & Name, Registers & Regs)
+std::function<RegisterType & (State &)> FetchRegisterReference(const std::string & Name)
 {
-	return Regs[Name[0] - 'a'];
+	const char RegisterID = Name[0] - 'a';
+	return [RegisterID](State & State)->RegisterType& { return State.Registers[RegisterID]; };
 }
 
-std::function<const RegisterType()> FetchSecondArg(const std::string & String, Registers & Regs)
+std::function<const RegisterType(State &)> FetchValue(const std::string & String)
 {
 	if (String[0] >= 'a')
 	{
-		const char Register = String[0] - 'a';
-		return [Register, &Regs]()->const int { return Regs[Register]; };
+		const char RegisterID = String[0] - 'a';
+		return [RegisterID](State & State)->const RegisterType { return State.Registers[RegisterID]; };
 	}
 	else
 	{
 		const int Value = std::stoi(String);
-		return [Value]()->const int { return Value; };
+		return [Value](State &)->const RegisterType { return Value; };
 	}
+}
+
+const std::unordered_map<std::string, std::function<Instruction(const StringVector &)>> CompilerMap{
+	{"set", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			auto Arg2 = FetchValue(Line[2]);
+			return [=](State & State)->bool { Arg1(State) = Arg2(State); State.InstructionPointer++; return true; };
+		}
+	},
+	{"add", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			auto Arg2 = FetchValue(Line[2]);
+			return [=](State & State)->bool { Arg1(State) += Arg2(State); State.InstructionPointer++; return true; };
+		}
+	},
+	{ "mul", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			auto Arg2 = FetchValue(Line[2]);
+			return [=](State & State)->bool { Arg1(State) *= Arg2(State); State.InstructionPointer++; return true; };
+		}
+	},
+	{ "mod", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			auto Arg2 = FetchValue(Line[2]);
+			return [=](State & State)->bool { Arg1(State) %= Arg2(State); State.InstructionPointer++; return true; };
+		}
+	},
+	{ "snd", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			return [=](State & State)->bool {
+				State.LastSendValue = Arg1(State);
+				State.SendBuffer.push(State.LastSendValue);
+				State.SendCounter++;
+				State.InstructionPointer++;
+				return true;
+			};
+		}
+	},
+	{ "rcv", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchRegisterReference(Line[1]);
+			return [=](State & State)->bool {
+				RegisterType & Register = Arg1(State);
+
+				if (State.ReceiveBuffer == nullptr)
+				{
+					if (Register != 0)
+					{
+						Register = State.LastSendValue;
+						State.ReceiveFlag = true;
+					}
+				}
+				else
+				{
+					if (State.ReceiveBuffer->size() <= 0)
+						return false;
+
+					Register = State.ReceiveBuffer->front();
+					State.ReceiveBuffer->pop();
+				}
+
+				State.InstructionPointer++; 
+				return true;
+			};
+		}
+	},
+	{ "jgz", [](const StringVector & Line)->Instruction
+		{
+			auto Arg1 = FetchValue(Line[1]);
+			auto Arg2 = FetchValue(Line[2]);
+			return [=](State & State)->bool {
+				State.InstructionPointer += (Arg1(State) > 0) ? Arg2(State) : 1;
+				return true;
+			};
+		}
+	},
+};
+
+void PartOne(const std::vector<Instruction> & Instructions)
+{
+	State PartOne{ 0 };
+
+	while (PartOne.InstructionPointer < Instructions.size())
+	{
+		Instructions[PartOne.InstructionPointer](PartOne);
+		if (PartOne.ReceiveFlag)
+		{
+			std::cout << "Last Frequency: " << PartOne.LastSendValue << std::endl;
+			break;
+		}
+	}
+}
+
+void PartTwo(const std::vector<Instruction> & Instructions)
+{
+	State ThreadZero{ 0 };
+	State ThreadOne{ 0 };
+	ThreadZero.ReceiveBuffer = &ThreadOne.SendBuffer;
+	ThreadOne.ReceiveBuffer = &ThreadZero.SendBuffer;
+
+	ThreadZero.Registers['p' - 'a'] = 0;
+	ThreadOne.Registers['p' - 'a'] = 1;
+
+	while ((ThreadZero.InstructionPointer < Instructions.size()) && (ThreadOne.InstructionPointer < Instructions.size()))
+	{
+		bool ThradZeroAdvanced = Instructions[ThreadZero.InstructionPointer](ThreadZero);
+		bool ThradOneAdvanced = Instructions[ThreadOne.InstructionPointer](ThreadOne);
+
+		if (!(ThradZeroAdvanced || ThradOneAdvanced))
+			break;
+	}
+
+	std::cout << "Thread 0: " << ThreadZero.SendCounter << std::endl;
+	std::cout << "Thread 1: " << ThreadOne.SendCounter << std::endl;
 }
 
 int main()
 {
 	const StringVectorVector Lines = GetFileLineParts("Input.txt");
 	
-	State State{ 0 };
-	size_t InstructionPointer = 0;
 	std::vector<Instruction> Instructions;
 
 	for (const auto & Line : Lines)
@@ -119,19 +177,12 @@ int main()
 		}
 		else
 		{
-			Instructions.emplace_back(InstructionCompiler->second(Line, State.Registers));
+			Instructions.emplace_back(InstructionCompiler->second(Line));
 		}
 	}
 
-	while (InstructionPointer < Instructions.size())
-	{
-		InstructionPointer += Instructions[InstructionPointer](State);
-		if (State.RecoveryFlag)
-		{
-			std::cout << "Last Frequency: " << State.Frequency << std::endl;
-			break;
-		}
-	}
+	PartOne(Instructions);
+	PartTwo(Instructions);
 
 	system("pause");
     return 0;
