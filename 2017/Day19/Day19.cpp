@@ -8,18 +8,17 @@ int main()
 {
 	const StringVector Map = GetFileLines("Input.txt");
 
-	std::pair<size_t, size_t> Position{ 0,0 };
-	while (Map[Position.first][Position.second] != '|')
-		Position.second++;
-
+	std::pair<size_t, size_t> Position{ 0, Map[0].find('|') };
 	std::pair<int, int> Movement{ 1,0 };
 	std::string Letters;
-	bool RecheadEnd = false;
+	size_t StepCount = 0;
+	bool ReachedEnd = false;
 
-	while (!RecheadEnd)
+	while (!ReachedEnd)
 	{
 		Position.first += Movement.first;
 		Position.second += Movement.second;
+		StepCount++;
 
 		const char Symbol = Map[Position.first][Position.second];
 		switch (Symbol)
@@ -29,7 +28,7 @@ int main()
 			break;
 		case ' ':
 			std::cout << "Off the path!" << std::endl;
-			RecheadEnd = true;
+			ReachedEnd = true;
 			break;
 		case '+':
 			if (Movement.first != 0)
@@ -49,7 +48,8 @@ int main()
 		}
 	}
 
-	std::cout << Letters << std::endl;
+	std::cout << "Word along the path: " << Letters << std::endl;
+	std::cout << "Steps along the path: " << StepCount << std::endl;
 
 	system("pause");
     return 0;
