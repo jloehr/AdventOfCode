@@ -210,12 +210,11 @@ int main()
 	}
 	
 	Grid Image(".#./..#/###");
-	for (auto Interations = 1; Interations <= 5; ++Interations)
+	for (auto Interation = 1; Interation <= 18; ++Interation)
 	{
 		Image = Iterate(Image, Rules, ((Image.GetSize() % 2) == 0) ? 2 : 3);
+		std::cout << "Iteration " << Interation << " Pixel count: " << Image.GetPixelCount() << std::endl;
 	}
-
-	std::cout << "Pixel count: " << Image.GetPixelCount() << std::endl;
 
 	system("pause");
     return 0;
