@@ -15,13 +15,13 @@ using PComponent = std::shared_ptr<Component>;
 using ComponentVector = std::vector<PComponent>;
 using ComponentMap = std::unordered_map<uint8_t, ComponentVector>;
 
-size_t BuildBridge(const ComponentMap & Buckets, uint8_t Coupling, size_t Strength)
+std::pair<size_t, size_t> BuildBridge(const ComponentMap & Buckets, uint8_t Coupling, size_t Strength, size_t Length, bool LongestBridge)
 {
+	std::pair<size_t, size_t> BestNewBridge { Strength, Length };
 	auto Result = Buckets.find(Coupling);
 	if (Result == std::end(Buckets))
-		return Strength;
+		return BestNewBridge;
 
-	size_t NewStrength = Strength;
 
 	for(const auto & Component : Result->second)
 	{
@@ -30,11 +30,14 @@ size_t BuildBridge(const ComponentMap & Buckets, uint8_t Coupling, size_t Streng
 
 		Component->Available = false;
 		uint8_t OtherCoupling = (Component->Ports[0] == Coupling) ? Component->Ports[1] : Component->Ports[0];
-		NewStrength = std::max(BuildBridge(Buckets, OtherCoupling, Strength + Coupling + OtherCoupling), NewStrength);
+		std::pair<size_t, size_t> NewBridge = BuildBridge(Buckets, OtherCoupling, Strength + Coupling + OtherCoupling, Length + 1, LongestBridge);	
+		if(((!LongestBridge) && (NewBridge.first > BestNewBridge.first)) || (LongestBridge && ((NewBridge.second > BestNewBridge.second) || ((NewBridge.second == BestNewBridge.second) && (NewBridge.first > BestNewBridge.first)))))
+			BestNewBridge = NewBridge;
+	
 		Component->Available = true;
 	}
 
-	return NewStrength;
+	return BestNewBridge;
 }
 
 int main()
@@ -51,7 +54,8 @@ int main()
 		Buckets[NewComponent->Ports[1]].push_back(NewComponent);
 	}
 
-	std::cout << "Strongest Bridge: " << BuildBridge(Buckets, 0, 0) << std::endl;
+	std::cout << "Strongest Bridge: " << BuildBridge(Buckets, 0, 0, 0, false).first << std::endl;
+	std::cout << "Strongest longest Bridge: " << BuildBridge(Buckets, 0, 0, 0, true).first << std::endl;
 
 	system("pause");
     return 0;
