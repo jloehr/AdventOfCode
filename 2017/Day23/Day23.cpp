@@ -84,6 +84,30 @@ void PartOne(const std::vector<Instruction> & Instructions)
 	std::cout << "Mul Count: " << PartOne.MulCount << std::endl;
 }
 
+void PartTwo()
+{
+	constexpr RegisterType Start = (99 * 100) + 100000;
+	constexpr RegisterType End = Start + 17000;
+
+	RegisterType h = 0;
+	
+	for(RegisterType b = Start; b <= End; b += 17)
+	{
+		bool IsPrime = true;	// set f 1
+
+		for(RegisterType d = 2; d < b; ++d)		// set d 2
+			if (b % d == 0) //jnz g 2
+			{
+				IsPrime = false; //set f 0
+				break;
+			}
+
+		if (!IsPrime) // jnz f 2
+			h++;		// sub h -1
+	}
+
+	std::cout << "Part two: " << h << std::endl;
+}
 
 int main()
 {
@@ -105,6 +129,7 @@ int main()
 	}
 
 	PartOne(Instructions);
+	PartTwo();
 
 	system("pause");
     return 0;
