@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include "MD5.h"
+#include "Timer.h"
 
 typedef std::vector<std::string> StringVector;
 typedef std::vector<StringVector> StringVectorVector;
