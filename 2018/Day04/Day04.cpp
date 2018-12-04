@@ -3,21 +3,22 @@
 
 #include "pch.h"
 
-typedef std::array<unsigned, 60> MinuteArray;
+typedef std::array<size_t, 60> MinuteArray;
 
 struct Guard
 {
-	unsigned Id;
-	unsigned TotalMinutesAsleep;
+	size_t Id;
+	size_t TotalMinutesAsleep;
+	size_t MostAsleepMinute;
 	MinuteArray TimeAsleepCounter;
 
-	Guard(unsigned Id)
+	Guard(size_t Id)
 		:Id(Id), TotalMinutesAsleep(0), TimeAsleepCounter({ 0 }) {}
 
 	Guard() = default;
 };
 
-typedef std::unordered_map<unsigned, Guard> GuardMap;
+typedef std::unordered_map<size_t, Guard> GuardMap;
 
 const GuardMap AnalyzeGuards(const StringVector & Lines);
 
@@ -28,18 +29,20 @@ int main()
 
 	const GuardMap Guards = AnalyzeGuards(File);
 
-	GuardMap::const_iterator MostAsleepGuard = std::max_element(
+	GuardMap::const_iterator MostAsleepGuardByTotal = std::max_element(
 		std::begin(Guards),
 		std::end(Guards),
 		[](const auto & a, const auto & b) { return a.second.TotalMinutesAsleep < b.second.TotalMinutesAsleep; }
 	);
 
-	MinuteArray::const_iterator MostAspleepMinute = std::max_element(
-		std::begin(MostAsleepGuard->second.TimeAsleepCounter),
-		std::end(MostAsleepGuard->second.TimeAsleepCounter)
+	GuardMap::const_iterator MostAsleepGuardByMinute = std::max_element(
+		std::begin(Guards),
+		std::end(Guards),
+		[](const auto & a, const auto & b) { return a.second.TimeAsleepCounter[a.second.MostAsleepMinute] < b.second.TimeAsleepCounter[b.second.MostAsleepMinute]; }
 	);
-
-	std::cout << "Part One: " << MostAsleepGuard->second.Id * std::distance(std::begin(MostAsleepGuard->second.TimeAsleepCounter), MostAspleepMinute) << std::endl;
+	
+	std::cout << "Part One: " << MostAsleepGuardByTotal->second.Id * MostAsleepGuardByTotal->second.MostAsleepMinute << std::endl;
+	std::cout << "Part Two: " << MostAsleepGuardByMinute->second.Id * MostAsleepGuardByMinute->second.MostAsleepMinute << std::endl;
 }
 
 const GuardMap AnalyzeGuards(const StringVector & Lines)
@@ -48,7 +51,7 @@ const GuardMap AnalyzeGuards(const StringVector & Lines)
 	std::smatch Matches;
 	GuardMap Guards;
 	GuardMap::iterator CurrentGuard;
-	unsigned StartTime = 0;
+	size_t StartTime = 0;
 
 	for (const std::string & Line : Lines)
 	{
@@ -59,27 +62,39 @@ const GuardMap AnalyzeGuards(const StringVector & Lines)
 		{
 		case 'G':
 			{
-				unsigned Id = std::stoul(Matches[3]);
+				size_t Id = std::stoull(Matches[3]);
 				CurrentGuard = Guards.insert({ Id, Guard(Id) }).first;
 				break;
 			}
 		case 'f':
-			StartTime = std::stoul(Matches[1]);
+			StartTime = std::stoull(Matches[1]);
 			break;
 		case 'w':
 			{
-				unsigned EndTime = std::stoul(Matches[1]);
+				size_t EndTime = std::stoull(Matches[1]);
 				CurrentGuard->second.TotalMinutesAsleep += EndTime - StartTime;
 
 				std::for_each(
 					std::begin(CurrentGuard->second.TimeAsleepCounter) + StartTime,
 					std::begin(CurrentGuard->second.TimeAsleepCounter) + EndTime,
-					[](unsigned & Counter) { ++Counter; }
+					[](size_t & Counter) { ++Counter; }
 				);
+
 				break;
 			}
 		}
 	}
+
+	std::for_each(std::begin(Guards), std::end(Guards), [](auto & Entry)
+		{
+			MinuteArray::const_iterator MostAspleepMinute = std::max_element(
+				std::begin(Entry.second.TimeAsleepCounter),
+				std::end(Entry.second.TimeAsleepCounter)
+			);
+
+			Entry.second.MostAsleepMinute = std::distance(std::cbegin(Entry.second.TimeAsleepCounter), MostAspleepMinute);
+		}
+	);
 
 	return Guards;
 }
