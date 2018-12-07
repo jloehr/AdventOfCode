@@ -17,12 +17,13 @@ struct Step
 		:Name(Name), Consumed(false) {}
 };
 
+std::pair<std::string, size_t> BuildInstruction(const std::set<StepPtr> & StartingSteps, size_t WorkerCount = 1);
+
 int main()
 {
 	const StringVector File = GetFileLines("Input.txt");
 	std::map<char, StepPtr> InstructionNodes;
-	std::set<StepPtr> StepQueue;
-	std::string Instructions;
+	std::set<StepPtr> StartingSteps;
 
 	for (const std::string & Line : File)
 	{
@@ -33,7 +34,7 @@ int main()
 		if (RequiredNode == nullptr)
 		{
 			RequiredNode = std::make_shared<Step>(Required);
-			StepQueue.insert(RequiredNode);
+			StartingSteps.insert(RequiredNode);
 		}
 
 		StepPtr & Node = InstructionNodes[StepName];
@@ -42,26 +43,62 @@ int main()
 
 		Node->Prerequisites.insert(RequiredNode);
 		RequiredNode->FollowingStep.insert(Node);
-		StepQueue.erase(Node);
+		StartingSteps.erase(Node);
 	}
 
-	while (!StepQueue.empty())
+	auto PartOne = BuildInstruction(StartingSteps);
+	// Reset
+	std::for_each(std::begin(InstructionNodes), std::end(InstructionNodes), [](auto & Element) { Element.second->Consumed = false; });
+	auto PartTwo = BuildInstruction(StartingSteps, 5);
+
+	std::cout << "Part One: " << PartOne.first << std::endl;
+	std::cout << "Part Two: " << PartTwo.second << std::endl;
+}
+
+std::pair<std::string, size_t> BuildInstruction(const std::set<StepPtr> & StartingSteps, size_t WorkerCount)
+{
+	std::string Instructions;
+	std::set<StepPtr> StepQueue(StartingSteps);
+
+	size_t CurrentTimeStep = 0;
+	std::vector<std::pair<size_t, StepPtr>> WorkerList(WorkerCount, { 0, nullptr });
+
+	while (!StepQueue.empty() || std::any_of(std::begin(WorkerList), std::end(WorkerList), [](const auto & Worker) { return (Worker.second != nullptr); }))
 	{
-		auto NextStep = std::min_element(std::begin(StepQueue), std::end(StepQueue), [](const StepPtr & lhs, const StepPtr & rhs) { return (lhs->Name < rhs->Name); });
-		StepPtr CurrentStep = *NextStep;
-		StepQueue.erase(NextStep);
+		auto NextFreeWorker = std::min_element(std::begin(WorkerList), std::end(WorkerList), [&](const auto & lhs, const auto & rhs)
+		{ 
+			if (!StepQueue.empty() || (!lhs.second == !rhs.second))
+				return lhs.first < rhs.first;
+			else
+				return !rhs.second;
+		});
+		CurrentTimeStep = std::max(CurrentTimeStep, NextFreeWorker->first);
 
-		Instructions += CurrentStep->Name;
-		CurrentStep->Consumed = true;
-
-		for (StepPtr Next : CurrentStep->FollowingStep)
+		if (StepPtr FinishedStep = NextFreeWorker->second)
 		{
-			if (std::any_of(std::begin(Next->Prerequisites), std::end(Next->Prerequisites), [](const StepPtr & Pre) { return !Pre->Consumed; }))
-				continue;
+			Instructions += FinishedStep->Name;
+			FinishedStep->Consumed = true;
 
-			StepQueue.insert(Next);
+			for (StepPtr Next : FinishedStep->FollowingStep)
+			{
+				if (std::any_of(std::begin(Next->Prerequisites), std::end(Next->Prerequisites), [](const StepPtr & Pre) { return !Pre->Consumed; }))
+					continue;
+
+				StepQueue.insert(Next);
+			}
 		}
+
+		auto NextStep = std::min_element(std::begin(StepQueue), std::end(StepQueue), [](const StepPtr & lhs, const StepPtr & rhs) { return (lhs->Name < rhs->Name); });
+		if (NextStep == std::end(StepQueue))
+		{
+			NextFreeWorker->second = nullptr; 
+			continue;
+		}
+
+		NextFreeWorker->first = CurrentTimeStep + 61 + ((*NextStep)->Name - 'A');
+		NextFreeWorker->second = *NextStep;
+		StepQueue.erase(NextStep);
 	}
 
-	std::cout << "Part One: " << Instructions << std::endl;
+	return { Instructions, CurrentTimeStep };
 }
