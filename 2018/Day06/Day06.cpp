@@ -13,6 +13,8 @@ struct Area
 
 int main()
 {
+	Timer timer;
+	timer.Start();
 	const StringVectorVector File = GetFileLineParts("Input.txt");
 	std::vector<Area> Areas;
 	std::vector<std::pair<Area *, uint32_t>> Distances;
@@ -73,4 +75,6 @@ int main()
 
 	std::cout << "Part One: " << Largest.Size << std::endl;
 	std::cout << "Part Two: " << PartTwoAreaSize << std::endl;
+	timer.Stop();
+	timer.Print();
 }
