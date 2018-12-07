@@ -2,6 +2,7 @@
 #define PCH_H
 
 #include <iostream>
+#include <numeric>
 
 #include "../../Common/Common.h"
 
