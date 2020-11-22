@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.106
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30717.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{1B72C39F-8FC6-410B-A3CC-7DCCED09B096}"
 EndProject
@@ -181,6 +181,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day07", "2018\Day07\Day07.vcxproj", "{F51206FB-F266-4F2C-8319-900697AD836E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day08", "2018\Day08\Day08.vcxproj", "{5AB0BB67-3160-4991-9D60-1AAEC79DF26F}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Day09", "2018\Day09\Day09.vcxproj", "{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1036,6 +1038,16 @@ Global
 		{5AB0BB67-3160-4991-9D60-1AAEC79DF26F}.Release|x64.Build.0 = Release|x64
 		{5AB0BB67-3160-4991-9D60-1AAEC79DF26F}.Release|x86.ActiveCfg = Release|Win32
 		{5AB0BB67-3160-4991-9D60-1AAEC79DF26F}.Release|x86.Build.0 = Release|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Debug|x64.ActiveCfg = Debug|x64
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Debug|x64.Build.0 = Debug|x64
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Debug|x86.ActiveCfg = Debug|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Debug|x86.Build.0 = Debug|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Release|Any CPU.ActiveCfg = Release|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Release|x64.ActiveCfg = Release|x64
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Release|x64.Build.0 = Release|x64
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Release|x86.ActiveCfg = Release|Win32
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1124,6 +1136,7 @@ Global
 		{CA99D603-9C0D-45C6-9EA1-2D4A482B0698} = {58CF3C6C-9623-4436-9AA2-C36992140DD5}
 		{F51206FB-F266-4F2C-8319-900697AD836E} = {58CF3C6C-9623-4436-9AA2-C36992140DD5}
 		{5AB0BB67-3160-4991-9D60-1AAEC79DF26F} = {58CF3C6C-9623-4436-9AA2-C36992140DD5}
+		{D54B0D87-7EF4-4468-8446-5EF0CBC1BDCB} = {58CF3C6C-9623-4436-9AA2-C36992140DD5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {071CD0DB-94C6-44C3-B2CE-CC5ECEA08E4C}
