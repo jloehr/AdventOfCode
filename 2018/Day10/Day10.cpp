@@ -50,8 +50,9 @@ int main()
 	PointList LastState = Points;
 	Bounds LastBounds = { INT64_MIN, INT64_MIN, INT64_MAX, INT64_MAX };
 	Bounds Bounds;
+	uint64_t Ticks = 0;
 
-	while (TickPoints(Points, LastBounds, Bounds))
+	for (;TickPoints(Points, LastBounds, Bounds); Ticks++)
 	{
 		LastState = Points;
 		LastBounds = Bounds;
@@ -65,6 +66,8 @@ int main()
 		}
 		std::cout << std::endl;
 	}
+
+	std::cout << "Part Two: " << Ticks << std::endl;
 }
 
 
