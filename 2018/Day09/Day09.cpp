@@ -17,7 +17,7 @@ int main()
 	std::list<uint64_t> Marbles = std::list<uint64_t>({ 0 });
 	auto CurrentMarble = Marbles.begin();
 
-	for (uint64_t NextMarble = 1; NextMarble <= LastMarble; NextMarble++)
+	for (uint64_t NextMarble = 1; NextMarble <= (LastMarble * 100); NextMarble++)
 	{
 		if ((NextMarble % 23) == 0)
 		{
@@ -47,7 +47,10 @@ int main()
 		}
 
 		++ActivePlayer %= PlayerNumber;
+
+		if(NextMarble == LastMarble)
+			std::cout << "Part One: " << *std::max_element(PlayerScores.cbegin(), PlayerScores.cend()) << std::endl;
 	}
 
-	std::cout << "Part One: " << *std::max_element(PlayerScores.cbegin(), PlayerScores.cend()) << std::endl;
+	std::cout << "Part Two: " << *std::max_element(PlayerScores.cbegin(), PlayerScores.cend()) << std::endl;
 }
