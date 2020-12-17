@@ -6,8 +6,11 @@
 
 #include "../../Common/Common.h"
 
-typedef std::function <ptrdiff_t(uint64_t&)> Instruction;
+enum class InstructionType { Acc = 'a', Nop = 'n', Jmp = 'j' };
+typedef std::pair<InstructionType, uint64_t> Instruction;
 typedef std::vector<Instruction> InstructionVector;
+
+std::pair<bool, uint64_t> Run(const InstructionVector& Instructions);
 
 int main()
 {
@@ -17,30 +20,53 @@ int main()
 
 	for (const auto& Line : LineParts)
 	{
-		uint64_t Argument = std::stoll(Line[1]);
-		switch (Line[0][0])
-		{
-		case 'a':
-			Instructions.push_back([=](uint64_t& Accumulator)->ptrdiff_t { Accumulator += Argument; return 1; });
-			break;
-		case 'n':
-			Instructions.push_back([=](uint64_t& Accumulator)->ptrdiff_t { return 1; });
-			break;
-		case 'j':
-			Instructions.push_back([=](uint64_t& Accumulator)->ptrdiff_t { return Argument; });
-			break;
-		}
+		Instructions.emplace_back(static_cast<InstructionType>(Line[0][0]), std::stoll(Line[1]));
 	}
 
+	std::cout << "Part One: " << Run(Instructions).second << std::endl;
+
+	for (Instruction& Instruction : Instructions)
+	{
+		if (Instruction.first == InstructionType::Acc) continue;
+
+		Instruction.first = (Instruction.first == InstructionType::Jmp) ? InstructionType::Nop : InstructionType::Jmp;
+		auto Result =  Run(Instructions);
+		if (Result.first)
+		{
+			std::cout << "Part Two: " << Result.second << std::endl;
+			break;
+		}
+		else
+		{
+			Instruction.first = (Instruction.first == InstructionType::Jmp) ? InstructionType::Nop : InstructionType::Jmp;
+		}
+	}
+}
+
+std::pair<bool, uint64_t> Run(const InstructionVector& Instructions)
+{
 	std::unordered_set<size_t> VisitedInstructions;
 	size_t InstructionPointer = 0;
 	uint64_t Accumulator = 0;
 
 	while (VisitedInstructions.insert(InstructionPointer).second)
 	{
-		InstructionPointer += Instructions[InstructionPointer](Accumulator);
+		if (InstructionPointer >= Instructions.size())
+			return std::make_pair(true, Accumulator);
+
+		const Instruction& Instruction = Instructions[InstructionPointer];
+		switch (Instruction.first)
+		{
+		case InstructionType::Acc:
+			Accumulator += Instruction.second;
+		case InstructionType::Nop:
+			InstructionPointer++;
+			break;
+		case InstructionType::Jmp:
+			InstructionPointer += Instruction.second;
+			break;
+		}
 	}
 
-	std::cout << "Part One: " << Accumulator << std::endl;
-
+	return std::make_pair(false, Accumulator);
 }
