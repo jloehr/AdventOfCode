@@ -11,18 +11,36 @@ bool Valid(U64Vector::const_iterator LowValue, U64Vector::const_iterator HighVal
 int main()
 {
 	U64Vector Values = GetValues<U64Vector::value_type>("Input.txt");
-	U64Vector::value_type PartOne = 0;
+	U64Vector::value_type InvalidNumber = 0;
 
 	for (U64Vector::const_iterator CurrentNumber = std::begin(Values) + 25; CurrentNumber != std::end(Values); CurrentNumber++)
 	{
 		if (!Valid(CurrentNumber - 25, CurrentNumber, (*CurrentNumber)))
 		{
-			PartOne = (*CurrentNumber);
+			InvalidNumber = (*CurrentNumber);
 			break;
 		}
 	}
 
-	std::cout << "Part One: " << PartOne << std::endl;
+	U64Vector::iterator LowIterator = std::begin(Values);
+	U64Vector::iterator HighIterator = std::begin(Values);
+	U64Vector::value_type Sum = *LowIterator;
+
+	while (Sum != InvalidNumber)
+	{
+		if ((Sum < InvalidNumber) || (LowIterator == HighIterator))
+		{
+			Sum += (*(++HighIterator));
+		}
+		else
+		{
+			Sum -= (*(LowIterator++));
+		}
+	}
+
+	std::sort(LowIterator, HighIterator + 1);
+	std::cout << "Part One: " << InvalidNumber << std::endl;
+	std::cout << "Part Two: " << ((*LowIterator) + (*HighIterator)) << std::endl;
 }
 
 bool Valid(U64Vector::const_iterator Begin, U64Vector::const_iterator End, U64Vector::value_type Number)
