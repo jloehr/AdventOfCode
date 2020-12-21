@@ -5,24 +5,30 @@
 
 #include "../../Common/Common.h"
 
-constexpr uint64_t Rounds = 2020;
+constexpr uint64_t PartOneRounds = 2020;
+constexpr uint64_t PartTwoRounds = 30000000;
 const std::vector<uint64_t> Input = { 14,3,1,0,9,5 };
+
+std::array<std::pair<uint64_t, uint64_t>, std::max(PartOneRounds, PartTwoRounds)> NumbersSpoken;
 
 int main()
 {
-	std::unordered_map<uint64_t, std::pair<uint64_t, uint64_t>> NumbersSpoken;
 	uint64_t Round = 1;
+	uint64_t PartOne = 0;
 
 	for (uint64_t StartingNumber : Input) NumbersSpoken[StartingNumber] = { Round++, 0 };
 	uint64_t LastNumber = *Input.crbegin();
-	for (; Round <= Rounds; Round++)
+	for (; Round <= std::max(PartOneRounds, PartTwoRounds); Round++)
 	{
 		uint64_t NewNumber = NumbersSpoken[LastNumber].second;
-		bool FirstTime = NumbersSpoken.find(NewNumber) == std::cend(NumbersSpoken);
+		bool FirstTime = NumbersSpoken[NewNumber].first == 0;
 
 		NumbersSpoken[NewNumber] = { Round, FirstTime ? 0 : (Round - NumbersSpoken[NewNumber].first) };
 		LastNumber = NewNumber;
+
+		if (Round == PartOneRounds) PartOne = LastNumber;
 	}
 
-	std::cout << "Part One: " << LastNumber << std::endl;
+	std::cout << "Part One: " << PartOne << std::endl;
+	std::cout << "Part Two: " << LastNumber << std::endl;
 }
